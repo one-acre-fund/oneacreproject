@@ -12,7 +12,7 @@ class MainWindow(QTabWidget):
         """
         Constructor
         """
-        QTabWidget.__init__(self)
+        super().__init__()
         
         inputTab = guiinput.InputTab()
         outputTab = guioutput.OutputTab()

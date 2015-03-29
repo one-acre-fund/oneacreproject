@@ -4,9 +4,16 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushBu
 
 # Import Tab
 class ImportTab(guidefault.DefaultTab):
+    DISTANCEFILE = 'd'
+    SITEFILE = 's'
+    COSTFILE = 'c'
+    currentDistanceFile = ""
+    currentSiteFile = ""
+    currentCostFile = ""
+    
     def __init__(self):
-        guidefault.DefaultTab.__init__(self)
-        
+        super().__init__()
+    
         mainBox = QVBoxLayout()
         
         title = QLabel("Import")
@@ -95,3 +102,10 @@ class ImportTab(guidefault.DefaultTab):
         mainBox.addLayout(saveBox)
 
         self.setLayout(mainBox)
+
+    def changeUploadedFile(self):
+        """
+        Listener that pops up a file dialog to allow user to change uploaded file
+        """
+        return
+        

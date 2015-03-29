@@ -6,7 +6,7 @@ class DefaultTab(QWidget):
         """
         Constructor
         """
-        QWidget.__init__(self)
+        super().__init__()
     
     def hLine(self):
         line = QFrame()

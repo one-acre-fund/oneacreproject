@@ -3,7 +3,7 @@ import guidefault
 # Input Tab
 class InputTab(guidefault.DefaultTab):
     def __init__(self):
-        guidefault.DefaultTab.__init__(self)
+        super().__init__()
 #        mainSizer = wx.BoxSizer(wx.VERTICAL)
 #        
 #        title = wx.StaticText(self, wx.ID_ANY, "Input")
