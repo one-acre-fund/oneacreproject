@@ -3,6 +3,7 @@ import guiinput
 import guioutput
 import guiimport
 from PyQt5.QtWidgets import QApplication, QWidget, QTabWidget
+from PyQt5.QtGui import QFont
 
 # The Main Window
 class MainWindow(QTabWidget):
@@ -27,5 +28,7 @@ class MainWindow(QTabWidget):
 # Main 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    font = QFont("Arial", 11)
+    app.setFont(font)
     window = MainWindow()
     sys.exit(app.exec_())

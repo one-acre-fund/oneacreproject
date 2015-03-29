@@ -1,25 +1,31 @@
 import guidefault
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QFrame
 
 # Import Tab
 class ImportTab(guidefault.DefaultTab):
     def __init__(self):
         guidefault.DefaultTab.__init__(self)
-#        mainSizer = wx.BoxSizer(wx.VERTICAL)
-#        
-#        title = wx.StaticText(self, wx.ID_ANY, "Import")
-#        titleFont = wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD)
-#        title.SetFont(titleFont)
-#
-#        description = wx.StaticText(self, wx.ID_ANY,
-#                "Use this to import input data not already saved into the application.")
-#
-#        districtSizer = wx.BoxSizer(wx.HORIZONTAL)
-#        districtLabel = wx.StaticText(self, wx.ID_ANY, "District:")
-#        districtText = wx.TextCtrl(self, wx.ID_ANY, "")
-#        districtSizer.Add(districtLabel, 0, wx.ALL, 5)
-#        districtSizer.Add((0,0), 1, wx.EXPAND)
-#        districtSizer.Add(districtText, 0, wx.ALL, 5)
-#
+        
+        mainBox = QVBoxLayout()
+        
+        title = QLabel("Import")
+        titleFont = title.font()
+        titleFont.setPointSize(12)
+        titleFont.setBold(True)
+        title.setFont(titleFont)
+        title.setAlignment(Qt.AlignCenter)
+
+        description = QLabel("Use this to import input data not already saved into the application.")
+        description.setWordWrap(True)
+
+        districtBox = QHBoxLayout()
+        districtLabel = QLabel("District:")
+        districtText = QLineEdit()
+        districtBox.addWidget(districtLabel)
+        districtBox.addStretch(1)
+        districtBox.addWidget(districtText)
+
 #        warehouseSizer = wx.BoxSizer(wx.HORIZONTAL)
 #        warehouseLabel = wx.StaticText(self, wx.ID_ANY, "Warehouse:")
 #        warehouseText = wx.TextCtrl(self, wx.ID_ANY, '')
@@ -69,11 +75,12 @@ class ImportTab(guidefault.DefaultTab):
 #        costSizer.Add(costLabel, 0, wx.ALL, 5)
 #        
 #        saveButton = wx.Button(self, wx.ID_ANY, "Save")
-#
-#        mainSizer.Add(title, 0, wx.CENTER, 5)
-#        mainSizer.Add(description, 0, wx.ALL, 5)
-#        mainSizer.Add(wx.StaticLine(self), 0, wx.ALL|wx.EXPAND, 5)
-#        mainSizer.Add(districtSizer, 0, wx.ALL|wx.EXPAND, 5)
+
+        mainBox.addWidget(title)
+        mainBox.addWidget(description)
+        mainBox.addWidget(self.hLine())
+        mainBox.addLayout(districtBox)
+        mainBox.addStretch(1)
 #        mainSizer.Add(warehouseSizer, 0, wx.ALL|wx.EXPAND, 5)
 #        mainSizer.Add(destinationSizer, 0, wx.ALL|wx.EXPAND, 5)
 #        mainSizer.Add(maxSizer, 0, wx.ALL|wx.EXPAND, 5)
@@ -82,5 +89,5 @@ class ImportTab(guidefault.DefaultTab):
 #        mainSizer.Add(costSizer, 0, wx.ALL|wx.EXPAND, 5)
 #        mainSizer.Add((0,0), 1, wx.EXPAND)
 #        mainSizer.Add(saveButton, 0, wx.ALL|wx.CENTER, 5)
-#
-#        self.SetSizer(mainSizer)
+
+        self.setLayout(mainBox)
