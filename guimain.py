@@ -1,59 +1,31 @@
-import wx
+import sys
 import guiinput
 import guioutput
 import guiimport
+from PyQt5.QtWidgets import QApplication, QWidget, QTabWidget
 
-# Main Notebook
-class MainNotebook(wx.Notebook):
-    def __init__(self, parent):
-        """
-        Constructor
-        """
-        wx.Notebook.__init__(self, parent, id=wx.ID_ANY, style=wx.BK_DEFAULT)
- 
-        inputTab = guiinput.InputTab(self)
-        outputTab = guioutput.OutputTab(self)
-        importTab = guiimport.ImportTab(self)
- 
-        self.AddPage(inputTab, "Input")
-        self.AddPage(outputTab, "Output")
-        self.AddPage(importTab, "Import")
-        
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.OnPageChanged)
-        self.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGING, self.OnPageChanging)
- 
-    def OnPageChanged(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
- 
-    def OnPageChanging(self, event):
-        old = event.GetOldSelection()
-        new = event.GetSelection()
-        sel = self.GetSelection()
-        event.Skip()
- 
 # The Main Window
-class MainFrame(wx.Frame):
+class MainWindow(QTabWidget):
     
     def __init__(self):
         """
         Constructor
         """
-        wx.Frame.__init__(self, None, wx.ID_ANY, "<Application Name>", size=(800,600))
-        panel = wx.Panel(self)
- 
-        notebook = MainNotebook(panel)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(notebook, 1, wx.ALL|wx.EXPAND, 5)
-        panel.SetSizer(sizer)
-        self.Layout()
- 
-        self.Show()
+        QTabWidget.__init__(self)
+        
+        inputTab = guiinput.InputTab()
+        outputTab = guioutput.OutputTab()
+        importTab = guiimport.ImportTab()
+        
+        self.resize(800, 600)
+        self.addTab(inputTab, "Input")
+        self.addTab(outputTab, "Output")
+        self.addTab(importTab, "Import")
+        self.setWindowTitle('<Application Name>')
+        self.show()
 
 # Main 
 if __name__ == "__main__":
-    app = wx.PySimpleApp()
-    frame = MainFrame()
-    app.MainLoop()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    sys.exit(app.exec_())
