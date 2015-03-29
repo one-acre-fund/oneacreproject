@@ -1,16 +1,21 @@
 import guidefault
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog
 
 # Import Tab
 class ImportTab(guidefault.DefaultTab):
-    DISTANCEFILE = 'd'
-    SITEFILE = 's'
-    COSTFILE = 'c'
+    DISTANCEFILE = "Distance Matrix"
+    WEIGHTFILE = "Site Weights"
+    COSTFILE = "Cost Matrix"
+    
     currentDistanceFile = ""
-    currentSiteFile = ""
+    currentWeightFile = ""
     currentCostFile = ""
     
+    distanceLabel = None
+    weightLabel = None
+    costLabel = None
+
     def __init__(self):
         super().__init__()
     
@@ -55,31 +60,34 @@ class ImportTab(guidefault.DefaultTab):
         maxBox.addWidget(maxText)
  
         distanceBox = QHBoxLayout()
-        distanceButton = QPushButton("Upload Distance Matrix")
+        distanceButton = QPushButton("Select Distance Matrix")
         distanceButton.setMinimumWidth(220)
         distanceButton.setMaximumWidth(220)
-        distanceLabel = QLabel("None uploaded.")
+        distanceButton.clicked.connect(self.distanceButtonClicked)
+        self.distanceLabel = QLabel("None selected.")
         distanceBox.addWidget(distanceButton)
         distanceBox.addStretch(1)
-        distanceBox.addWidget(distanceLabel)
- 
+        distanceBox.addWidget(self.distanceLabel)
+
         weightBox = QHBoxLayout()
-        weightButton = QPushButton("Upload Site Weights")
+        weightButton = QPushButton("Select Site Weights")
         weightButton.setMinimumWidth(220)
         weightButton.setMaximumWidth(220)
-        weightLabel = QLabel("None uploaded.")
+        weightButton.clicked.connect(self.weightButtonClicked)
+        self.weightLabel = QLabel("None selected.")
         weightBox.addWidget(weightButton)
         weightBox.addStretch(1)
-        weightBox.addWidget(weightLabel)
+        weightBox.addWidget(self.weightLabel)
         
         costBox = QHBoxLayout()
-        costButton = QPushButton("Upload Cost Matrix")
+        costButton = QPushButton("Select Cost Matrix")
         costButton.setMinimumWidth(220)
         costButton.setMaximumWidth(220)
-        costLabel = QLabel("None uploaded.")
+        costButton.clicked.connect(self.costButtonClicked)
+        self.costLabel = QLabel("None selected.")
         costBox.addWidget(costButton)
         costBox.addStretch(1)
-        costBox.addWidget(costLabel)
+        costBox.addWidget(self.costLabel)
         
         saveBox = QHBoxLayout()
         saveButton = QPushButton("Save")
@@ -103,9 +111,38 @@ class ImportTab(guidefault.DefaultTab):
 
         self.setLayout(mainBox)
 
-    def changeUploadedFile(self):
+    def distanceButtonClicked(self):
+        """
+        Handles when distance button is clicked
+        """
+        self.changeUploadedFile(self.DISTANCEFILE)
+
+    def weightButtonClicked(self):
+        """
+        Handles when weight button is clicked
+        """
+        self.changeUploadedFile(self.WEIGHTFILE)
+    
+    def costButtonClicked(self):
+        """
+        Handles when cost button is clicked
+        """
+        self.changeUploadedFile(self.COSTFILE)
+    
+    def changeUploadedFile(self, fileType):
         """
         Listener that pops up a file dialog to allow user to change uploaded file
+        @param fileType Use constants DISTANCEFILE, etc...
         """
-        return
-        
+        fileName = QFileDialog.getOpenFileName(self, "Open " + fileType,
+                                               "", "*.xls *.xlsx")
+        if fileName[0] != "":
+            if fileType == self.DISTANCEFILE:
+                currentDistanceFile = fileName[0]
+                self.distanceLabel.setText(fileName[0])
+            elif fileType == self.WEIGHTFILE:
+                currentWeightFile = fileName[0]
+                self.weightLabel.setText(fileName[0])
+            elif fileType == self.COSTFILE:
+                currentCostFile = fileName[0]
+                self.costLabel.setText(fileName[0])
