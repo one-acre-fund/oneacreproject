@@ -1,7 +1,8 @@
 import sys
+import os
 import guiinput
 import guioutput
-import guiimport
+import guidata
 from PyQt5.QtWidgets import QApplication, QWidget, QTabWidget
 from PyQt5.QtGui import QFont
 
@@ -16,17 +17,17 @@ class MainWindow(QTabWidget):
         
         inputTab = guiinput.InputTab()
         outputTab = guioutput.OutputTab()
-        importTab = guiimport.ImportTab()
         
         self.resize(800, 600)
         self.addTab(inputTab, "Input")
         self.addTab(outputTab, "Output")
-        self.addTab(importTab, "Import")
         self.setWindowTitle('<Application Name>')
         self.show()
 
 # Main 
 if __name__ == "__main__":
+    if not guidata.init():
+        sys.exit()
     app = QApplication(sys.argv)
     font = QFont("Arial", 11)
     app.setFont(font)
