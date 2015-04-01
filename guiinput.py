@@ -1,4 +1,5 @@
 import guidefault
+import guidata
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, 
                              QPushButton, QFileDialog, QComboBox)
@@ -155,7 +156,6 @@ class InputTab(guidefault.DefaultTab):
 
         return (box, button1, button2, label)
 
-
     def distanceSButtonClicked(self):
         """
         Handles when distance button is clicked
@@ -179,6 +179,10 @@ class InputTab(guidefault.DefaultTab):
         Handles when save button is clicked
         """
         # TODO
+        error = guidata.saveData(self.district.text(), self.warehouse.text(), self.destinations.text(),
+                                 self.trucks.text(), "", "", "")
+        if error:
+            print(error)
         return
     
     def changeUploadedFile(self, fileType):

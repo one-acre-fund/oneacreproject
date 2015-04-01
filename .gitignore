@@ -52,3 +52,10 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# vim temp files
+*~
+*.swp
+
+# data directory
+data/
