@@ -2,7 +2,7 @@ import guidefault
 import guidata
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, 
-                             QPushButton, QFileDialog, QComboBox)
+                             QPushButton, QFileDialog, QComboBox, QSizePolicy)
 
 # Input Tab
 class InputTab(guidefault.DefaultTab):
@@ -13,14 +13,13 @@ class InputTab(guidefault.DefaultTab):
     COSTFILE = "Cost Matrix"
     
     # Instance variable widgets needed when "save" is clicked
-    combo = None
-    district = None
-    warehouse = None
+    districtCombo = None
     destinations = None
     trucks = None
+    costLabel = None
+    warehouseCombo = None
     distanceLabel = None
     weightLabel = None
-    costLabel = None
 
     def __init__(self):
         """
@@ -38,27 +37,31 @@ class InputTab(guidefault.DefaultTab):
         title.setAlignment(Qt.AlignCenter)
 
         description = QLabel("Use this to provide input data for calculation in the model. "
-                             "You can select inputs from a previously saved warehouse, "
-                             "or create new data by selecting \"New\". "
-                             "For the spreadsheets, "
-                             "use \"Select\" to select a new spreadsheet from file, "
-                             "or \"Edit\" to make changes to the previously saved spreadsheet "
-                             "associated with the warehouse.")
+                             "You can select inputs from a previously saved warehouse through the dropdown. "
+                             "Afterwards, you can select from the multiple districts associated with the warehouse. "
+                             "Use the \"Add\" buttons to add new districts or warehouses. "
+                             "Use the \"Select\" buttons to select new spreadsheets from file. "
+                             "Use the \"Edit\" buttons to make changes to previously saved spreadsheets. "
+                             "Don't forget to click \"Save\" to save your changes.")
+        descriptionFont = description.font()
+        descriptionFont.setPointSize(10)
+        description.setFont(descriptionFont)
         description.setWordWrap(True)
         description.setAlignment(Qt.AlignJustify)
         
-        (comboBox, self.combo) = self.createComboBox(["New"], 0)
-        (districtBox, self.district) = self.createTextBox("District:") 
-        (warehouseBox, self.warehouse) = self.createTextBox("Warehouse:")
+        (warehouseBox, self.warehouseCombo) = self.createComboBox("Warehouse:",[], 0)
         (destinationsBox, self.destinations) = self.createTextBox("Destinations/Truck:")
         (trucksBox, self.trucks) = self.createTextBox("Max Trucks/Warehouse/Day:")
- 
+        (costBox, costSButton, costEButton, self.costLabel) \
+            = self.createSelectBox("Select Cost Matrix", "None Selected.")
+        warehouseButton = self.createWButton("Add New Warehouse")
+        
+        (districtBox, self.districtCombo) = self.createComboBox("District:", [], 0)
         (distanceBox, distanceSButton, distanceEButton, self.distanceLabel) \
             = self.createSelectBox("Select Distance Matrix", "None selected.")
         (weightBox, weightSButton, weightEButton, self.weightLabel) \
             = self.createSelectBox("Select Site Weights", "None selected.")
-        (costBox, costSButton, costEButton, self.costLabel) \
-            = self.createSelectBox("Select Cost Matrix", "None selected.")
+        districtButton = self.createWButton("Add New District")
         
         botBox = QHBoxLayout()
         saveButton = QPushButton("Save")
@@ -73,16 +76,17 @@ class InputTab(guidefault.DefaultTab):
         mainBox.addWidget(title)
         mainBox.addWidget(description)
         mainBox.addWidget(self.hLine())
-        mainBox.addLayout(comboBox)
-        mainBox.addWidget(self.hLine())
-        mainBox.addLayout(districtBox)
         mainBox.addLayout(warehouseBox)
         mainBox.addLayout(destinationsBox)
         mainBox.addLayout(trucksBox)
+        mainBox.addLayout(costBox)
+        mainBox.addWidget(warehouseButton)
         mainBox.addWidget(self.hLine())
+        mainBox.addLayout(districtBox)
         mainBox.addLayout(distanceBox)
         mainBox.addLayout(weightBox)
-        mainBox.addLayout(costBox)
+        mainBox.addWidget(districtButton)
+        mainBox.addWidget(self.hLine())
         mainBox.addStretch(1)
         mainBox.addLayout(botBox)
 
@@ -93,27 +97,39 @@ class InputTab(guidefault.DefaultTab):
         costSButton.clicked.connect(self.costSButtonClicked)
         saveButton.clicked.connect(self.saveButtonClicked)
     
-    def createComboBox(self, options, default):
+    def createComboBox(self, labelText, options, default):
         """
-        Creates a Layout containing a ComboBox Widget 
-        It contains a given list of options
+        Creates a Layout containing a Label and a ComboBox Widget
+        The ComboBox contains a given list of options
+        @param labelText The text on the label 
         @param options The list of string options
         @param default The integer index of the default option
         @return (Layout, ComboBoxWidget) as a tuple
         """
+        label = QLabel(labelText)
         combo = QComboBox(self)
         for option in options:
             combo.addItem(option)
         combo.setCurrentIndex(default)
-        combo.setMinimumWidth(215)
-        combo.setMaximumWidth(215)
-        
+        combo.setMinimumWidth(200)
+
         box = QHBoxLayout()
-        box.addWidget(combo)
+        box.addWidget(label)
         box.addStretch(1)
+        box.addWidget(combo)
         
         return (box, combo)
     
+    def createWButton(self, buttonText):
+        """
+        Creates a Button that takes up the whole width
+        @param buttonText The text on the button
+        @return The button
+        """
+        button = QPushButton(buttonText)
+        button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        return button
+
     def createTextBox(self, labelText):
         """
         Creates a Layout containing a Label
@@ -123,6 +139,7 @@ class InputTab(guidefault.DefaultTab):
         """
         label = QLabel(labelText)
         text = QLineEdit()
+        text.setMinimumWidth(200)
         
         box = QHBoxLayout()
         box.addWidget(label)
