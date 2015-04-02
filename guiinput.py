@@ -53,14 +53,14 @@ class InputTab(guidefault.DefaultTab):
         (destinationsBox, self.destinations) = self.createTextBox("Destinations/Truck:")
         (trucksBox, self.trucks) = self.createTextBox("Max Trucks/Warehouse/Day:")
         (costBox, costSButton, costEButton, self.costLabel) \
-            = self.createSelectBox("Select Cost Matrix", "None Selected.")
+            = self.createSelectBox("Select Cost Matrix", "")
         warehouseButton = self.createWButton("Add New Warehouse")
         
         (districtBox, self.districtCombo) = self.createComboBox("District:", [], 0)
         (distanceBox, distanceSButton, distanceEButton, self.distanceLabel) \
-            = self.createSelectBox("Select Distance Matrix", "None selected.")
+            = self.createSelectBox("Select Distance Matrix", "")
         (weightBox, weightSButton, weightEButton, self.weightLabel) \
-            = self.createSelectBox("Select Site Weights", "None selected.")
+            = self.createSelectBox("Select Site Weights", "")
         districtButton = self.createWButton("Add New District")
         
         botBox = QHBoxLayout()
@@ -183,8 +183,19 @@ class InputTab(guidefault.DefaultTab):
         """
         Loads all data associated with the currently selected district onto the GUI
         """
-        # TODO: Finish
+        warehouse = self.warehouseCombo.currentText()
         district = self.districtCombo.currentText()
+        if not district:
+            return
+        (d, w) = guidata.getDistrictInfo(warehouse, district)
+        if d:
+            self.distanceLabel.setText(d)
+        else:
+            self.distanceLabel.setText("None Selected.")
+        if w:
+            self.weightLabel.setText(w)
+        else:
+            self.weightLabel.setText("None Selected.")
         return
    
     def loadDistricts(self, districtName):
@@ -208,9 +219,17 @@ class InputTab(guidefault.DefaultTab):
         If districtName is empty, the currently selected district is picked
         @param districtName
         """
-        # TODO: Finish
-        warehouse = self.warehouseCombo.currentText()
         self.loadDistricts(districtName)
+        warehouse = self.warehouseCombo.currentText()
+        if not warehouse:
+            return
+        (d, t, c) = guidata.getWarehouseInfo(warehouse)
+        self.destinations.setText(d)
+        self.trucks.setText(t)
+        if c:
+            self.costLabel.setText(c)
+        else:
+            self.costLabel.setText("None Selected.")
         return
  
     def loadAllData(self, warehouseName, districtName):
@@ -294,10 +313,12 @@ class InputTab(guidefault.DefaultTab):
         Handles when save button is clicked
         """
         # TODO
-        #error = guidata.saveData(self.district.text(), self.warehouse.text(), self.destinations.text(),
-        #                         self.trucks.text(), "", "", "")
-        #if error:
-        #    print(error)
+        warehouseName = self.warehouseCombo.currentText()
+        districtName = self.districtCombo.currentText()
+        if not warehouseName:
+            return
+        error = guidata.saveData(warehouseName, districtName, 
+                                 self.destinations.text(), self.trucks.text(), "", "", "")
         return
     
     def changeUploadedFile(self, fileType):

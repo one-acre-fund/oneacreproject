@@ -6,6 +6,7 @@ import json
 # guidata module for saving/loading data
 dataDir = "data"
 indexFile = "index.json"
+districts = "districts"
 distanceSuffix = "_dm"
 weightSuffix = "_sw"
 costSuffix = "_cm"
@@ -36,10 +37,21 @@ def addWarehouse(warehouseName):
     @return (success, errorString) as a tuple, success is True/False
     """
     global jsonData
+    warehouseName = warehouseName.strip()
+    try:
+        open(warehouseName, 'w').close()
+        os.unlink(warehouseName)
+    except OSError:
+        return (False, "%s is not a legal file names, please remove illegal characters." 
+                % (warehouseName))
     if warehouseName in jsonData:
         return (False, "There is already a warehouse named %s added"
                 % warehouseName)
     jsonData[warehouseName] = {}
+    jsonData[warehouseName][destinationsSuffix] = ""
+    jsonData[warehouseName][trucksSuffix] = ""
+    jsonData[warehouseName][costSuffix] = None
+    jsonData[warehouseName][districts] = {}
     error = saveJsonData()
     if error:
         return (True, "Warehouse was added, but " + error)
@@ -50,7 +62,6 @@ def getWarehouses():
     Returns a list of warehouse names, sorted alphabetically
     @return the list
     """
-    global jsonData
     wList = list(jsonData.keys())
     wList.sort()
     return wList
@@ -63,10 +74,19 @@ def addDistrict(warehouseName, districtName):
     @return (success, errorString) as a tuple, success is True/False
     """
     global jsonData
+    districtName = districtName.strip()
+    try:
+        open(districtName, 'w').close()
+        os.unlink(distrctName)
+    except OSError:
+        return (False, "%s is not a legal file name, please remove illegal characters." 
+                % (districtName))
     if districtName in jsonData[warehouseName]:
         return (False, "There is already a district named %s added to warehouse %s"
                 % (districtName, warehouseName))
-    jsonData[warehouseName][districtName] = {}
+    jsonData[warehouseName][districts][districtName] = {}
+    jsonData[warehouseName][districts][districtName][distanceSuffix] = None
+    jsonData[warehouseName][districts][districtName][weightSuffix] = None
     error = saveJsonData()
     if error:
         return (True, "District was added, but " + error)
@@ -78,10 +98,9 @@ def getDistricts(warehouseName):
     @param warehouseName Name of warehouse, or None
     @return the list, [] returned if no warehouse provided
     """
-    global jsonData
     if not warehouseName:
         return []
-    dList = list(jsonData[warehouseName].keys())
+    dList = list(jsonData[warehouseName][districts].keys())
     dList.sort()
     return dList
 
@@ -102,30 +121,21 @@ def copyFile(source, destination):
 def saveInfo(warehouseName, districtName, destPerTruck, 
         truckPerW, distanceFile, weightFile, costFile):
     """
-    Saves data for a new district-warehouse 
+    Saves all data for an associated distrct and warehouse
+    If districtName is empty, this only saves the warehouse data
     @return None if successful, or an error string if there is an error
     """
+    # TODO: Finish
     global jsonData
     
-    # Make sure districtName_warehouseName is useable
-    warehouseName = warehouseName.strip()
-    districtName = districtName.strip()
     name = warehouseName + "_" + districtName
-    try:
-        open(name, 'w').close()
-        os.unlink(name)
-    except OSError:
-        return ("Make sure %s and %s are legal file names, ie does not contain illegal characters." 
-                % (districtName, warehouseName))
-    
     # Save meta data
-    if districtName not in jsonData:
-        jsonData[districtName] = {}
-        jsonData[districtname][distanceSuffix] = None
-        jsonData[name][weightSuffix] = None
-    jsonData[districtName][costSuffix] = None
-    jsonData[districtName][destinationsSuffix] = destPerTruck
-    jsonData[districtName][trucksSuffix] = truckPerW
+    #if districtName:
+    #    jsonData[districtname][distanceSuffix] = None
+    #    jsonData[name][weightSuffix] = None
+    #jsonData[districtName][costSuffix] = None
+    jsonData[warehouseName][destinationsSuffix] = destPerTruck
+    jsonData[warehouseName][trucksSuffix] = truckPerW
     
     ## Obtain abs paths for all files
     #distanceFileO = jsonData[name][distanceSuffix]
@@ -142,18 +152,33 @@ def saveInfo(warehouseName, districtName, destPerTruck,
     #error = None
     #if distanceFileS != distanceFileO:
     #    if not
-    
+        
+    error = saveJsonData()
 
     return None
 
-def getInfo(warehouseName, districtName):
+def getWarehouseInfo(warehouseName):
     """
-    Returns the associated info with the given warehouse and district
+    Returns the associated info with the given warehouse
     Returns a tuple
-    @return (destPerTruck, truckPerW, distanceFile, weightFile, costFile)
+    @param warehouseName
+    @return (destPerTruck, truckPerW, costFile)
     """
-    # TODO: Finish
-    return
+    d = jsonData[warehouseName][destinationsSuffix]
+    t = jsonData[warehouseName][trucksSuffix]
+    c = jsonData[warehouseName][costSuffix]
+    return (d, t, c)
+
+def getDistrictInfo(warehouseName, districtName):
+    """
+    Returns the associated info with the given district
+    Returns a tuple
+    @param districtName
+    @return (distanceFile, weightFile)
+    """
+    d = jsonData[warehouseName][districtName][distanceSuffix]
+    w = jsonData[warehouseName][districtName][weightSuffix]
+    return (d, w)
 
 def createDataDir():
     """
