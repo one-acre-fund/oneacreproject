@@ -1,8 +1,8 @@
 import guidefault
 import guidata
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, 
-                             QPushButton, QFileDialog, QComboBox, QSizePolicy)
+from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
+                             QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
 
 # Input Tab
 class InputTab(guidefault.DefaultTab):
@@ -49,7 +49,7 @@ class InputTab(guidefault.DefaultTab):
         description.setWordWrap(True)
         description.setAlignment(Qt.AlignJustify)
         
-        (warehouseBox, self.warehouseCombo) = self.createComboBox("Warehouse:",[], 0)
+        (warehouseBox, self.warehouseCombo) = self.createComboBox("Warehouse:", [], 0)
         (destinationsBox, self.destinations) = self.createTextBox("Destinations/Truck:")
         (trucksBox, self.trucks) = self.createTextBox("Max Trucks/Warehouse/Day:")
         (costBox, costSButton, costEButton, self.costLabel) \
@@ -91,11 +91,17 @@ class InputTab(guidefault.DefaultTab):
         mainBox.addLayout(botBox)
 
         self.setLayout(mainBox)
-
+        
+        self.warehouseCombo.currentTextChanged.connect(self.warehouseChanged)
+        self.districtCombo.currentTextChanged.connect(self.districtChanged)
+        warehouseButton.clicked.connect(self.warehouseButtonClicked)
+        districtButton.clicked.connect(self.districtButtonClicked)
         distanceSButton.clicked.connect(self.distanceSButtonClicked)
         weightSButton.clicked.connect(self.weightSButtonClicked)
         costSButton.clicked.connect(self.costSButtonClicked)
         saveButton.clicked.connect(self.saveButtonClicked)
+
+        self.loadAllData(None, None)
     
     def createComboBox(self, labelText, options, default):
         """
@@ -173,6 +179,98 @@ class InputTab(guidefault.DefaultTab):
 
         return (box, button1, button2, label)
 
+    def loadDistrictData(self):
+        """
+        Loads all data associated with the currently selected district onto the GUI
+        """
+        # TODO: Finish
+        district = self.districtCombo.currentText()
+        return
+   
+    def loadDistricts(self, districtName):
+        """
+        Loads the district list and its associated data onto the GUI
+        If districtName is empty, the currently selected district is picked
+        @param districtName
+        """
+        warehouse = self.warehouseCombo.currentText()
+        self.districtCombo.clear()
+        districts = guidata.getDistricts(warehouse)
+        for district in districts:
+            self.districtCombo.addItem(district)
+        if districtName:
+            self.districtCombo.setCurrentText(districtName)
+        self.loadDistrictData()
+
+    def loadWarehouseData(self, districtName):
+        """
+        Loads all data associated with the currently selected warehouse onto the GUI
+        If districtName is empty, the currently selected district is picked
+        @param districtName
+        """
+        # TODO: Finish
+        warehouse = self.warehouseCombo.currentText()
+        self.loadDistricts(districtName)
+        return
+ 
+    def loadAllData(self, warehouseName, districtName):
+        """
+        Loads all data, including the lists, onto the GUI
+        Clears any previous data loaded to the GUI
+        If warehouseName is empty, the currently selected warehouse is picked
+        If districtName is empty, the currently selected district is picked
+        @param warehouseName
+        @param districtName
+        """
+        self.warehouseCombo.clear()
+        warehouses = guidata.getWarehouses()
+        for warehouse in warehouses:
+            self.warehouseCombo.addItem(warehouse)
+        if warehouseName:
+            self.warehouseCombo.setCurrentText(warehouseName)
+        self.loadWarehouseData(districtName)
+          
+    def warehouseChanged(self, name):
+        """
+        Handles when a new warehouse is selected
+        """
+        self.loadWarehouseData(None)
+        
+    def districtChanged(self, name):
+        """
+        Handles when a new warehouse is selected
+        """
+        self.loadDistrictData()
+
+    def warehouseButtonClicked(self):
+        """
+        Handles when "Add Warehouse" is clicked
+        """
+        name, ok = QInputDialog.getText(self, "Add New Warehouse", "Warehouse Name:")
+        if ok:
+            success, errorString = guidata.addWarehouse(name)
+            if not success:
+                QMessageBox.critical(self, "Error", errorString)
+                return
+            if errorString:
+                QMessageBox.warning(self, "Warning", errorString)
+            self.loadAllData(name, None)
+    
+    def districtButtonClicked(self):
+        """
+        Handles when "Add Warehouse" is clicked
+        """
+        warehouseName = self.warehouseCombo.currentText()
+        name, ok = QInputDialog.getText(self, "Add New District", "District Name:")
+        if ok:
+            success, errorString = guidata.addDistrict(warehouseName, name)
+            if not success:
+                QMessageBox.critical(self, "Error", errorString)
+                return
+            if errorString:
+                QMessageBox.warning(self, "Warning", errorString)
+            self.loadDistricts(name)
+ 
     def distanceSButtonClicked(self):
         """
         Handles when distance button is clicked
@@ -196,10 +294,10 @@ class InputTab(guidefault.DefaultTab):
         Handles when save button is clicked
         """
         # TODO
-        error = guidata.saveData(self.district.text(), self.warehouse.text(), self.destinations.text(),
-                                 self.trucks.text(), "", "", "")
-        if error:
-            print(error)
+        #error = guidata.saveData(self.district.text(), self.warehouse.text(), self.destinations.text(),
+        #                         self.trucks.text(), "", "", "")
+        #if error:
+        #    print(error)
         return
     
     def changeUploadedFile(self, fileType):
