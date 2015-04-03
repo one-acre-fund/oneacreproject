@@ -13,13 +13,17 @@ class InputTab(guidefault.DefaultTab):
     COSTFILE = "Cost Matrix"
     
     # Instance variable widgets needed when "save" is clicked
-    districtCombo = None
+    warehouseCombo = None
     destinations = None
     trucks = None
     costLabel = None
-    warehouseCombo = None
+    districtCombo = None
     distanceLabel = None
     weightLabel = None
+
+    # Widgets related to warehouses and districts, for disabling purposes
+    warehouseWidgets = []
+    districtWidgets = []
 
     def __init__(self):
         """
@@ -100,6 +104,15 @@ class InputTab(guidefault.DefaultTab):
         weightSButton.clicked.connect(self.weightSButtonClicked)
         costSButton.clicked.connect(self.costSButtonClicked)
         saveButton.clicked.connect(self.saveButtonClicked)
+        
+        self.warehouseWidgets.append(self.destinations)
+        self.warehouseWidgets.append(self.trucks)
+        self.warehouseWidgets.append(costSButton)
+        self.warehouseWidgets.append(costEButton)
+        self.districtWidgets.append(distanceSButton)
+        self.districtWidgets.append(distanceEButton)
+        self.districtWidgets.append(weightSButton)
+        self.districtWidgets.append(weightEButton)
 
         self.loadAllData(None, None)
     
@@ -186,7 +199,9 @@ class InputTab(guidefault.DefaultTab):
         warehouse = self.warehouseCombo.currentText()
         district = self.districtCombo.currentText()
         if not district:
+            self.enableDistrictWidgets(False)
             return
+        self.enableDistrictWidgets(True)
         (d, w) = guidata.getDistrictInfo(warehouse, district)
         if d:
             self.distanceLabel.setText(d)
@@ -222,7 +237,9 @@ class InputTab(guidefault.DefaultTab):
         self.loadDistricts(districtName)
         warehouse = self.warehouseCombo.currentText()
         if not warehouse:
+            self.enableWarehouseWidgets(False)
             return
+        self.enableWarehouseWidgets(True)
         (d, t, c) = guidata.getWarehouseInfo(warehouse)
         self.destinations.setText(d)
         self.trucks.setText(t)
@@ -248,7 +265,29 @@ class InputTab(guidefault.DefaultTab):
         if warehouseName:
             self.warehouseCombo.setCurrentText(warehouseName)
         self.loadWarehouseData(districtName)
-          
+    
+    def enableWarehouseWidgets(self, enable):
+        """
+        Call this to enable/disable all widgets that require a warehouse to be selected
+        Does not include the district widgets
+        @param enable True or False
+        """
+        for widget in self.warehouseWidgets:
+            widget.setEnabled(enable)
+        if not enable:
+            self.costLabel.setText("")
+
+    def enableDistrictWidgets(self, enable):
+        """
+        Call this to enable/disable all widgets that require a district to be selected
+        @param enable True or False
+        """
+        for widget in self.districtWidgets:
+            widget.setEnabled(enable)
+        if not enable:
+            self.distanceLabel.setText("")
+            self.weightLabel.setText("")
+    
     def warehouseChanged(self, name):
         """
         Handles when a new warehouse is selected
@@ -317,7 +356,7 @@ class InputTab(guidefault.DefaultTab):
         districtName = self.districtCombo.currentText()
         if not warehouseName:
             return
-        error = guidata.saveData(warehouseName, districtName, 
+        error = guidata.saveInfo(warehouseName, districtName, 
                                  self.destinations.text(), self.trucks.text(), "", "", "")
         return
     

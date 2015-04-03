@@ -77,7 +77,7 @@ def addDistrict(warehouseName, districtName):
     districtName = districtName.strip()
     try:
         open(districtName, 'w').close()
-        os.unlink(distrctName)
+        os.unlink(districtName)
     except OSError:
         return (False, "%s is not a legal file name, please remove illegal characters." 
                 % (districtName))
@@ -176,8 +176,8 @@ def getDistrictInfo(warehouseName, districtName):
     @param districtName
     @return (distanceFile, weightFile)
     """
-    d = jsonData[warehouseName][districtName][distanceSuffix]
-    w = jsonData[warehouseName][districtName][weightSuffix]
+    d = jsonData[warehouseName][districts][districtName][distanceSuffix]
+    w = jsonData[warehouseName][districts][districtName][weightSuffix]
     return (d, w)
 
 def createDataDir():
