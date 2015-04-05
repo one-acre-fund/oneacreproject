@@ -1,5 +1,6 @@
 import guidefault
 import guidata
+import os
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
                              QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
@@ -108,6 +109,9 @@ class InputTab(guidefault.DefaultTab):
         distanceSButton.clicked.connect(self.distanceSButtonClicked)
         weightSButton.clicked.connect(self.weightSButtonClicked)
         costSButton.clicked.connect(self.costSButtonClicked)
+        distanceEButton.clicked.connect(self.distanceEButtonClicked)
+        weightEButton.clicked.connect(self.weightEButtonClicked)
+        costEButton.clicked.connect(self.costEButtonClicked)
         saveButton.clicked.connect(self.saveButtonClicked)
         
         self.warehouseWidgets.append(self.destinations)
@@ -210,10 +214,12 @@ class InputTab(guidefault.DefaultTab):
         (d, w) = guidata.getDistrictInfo(warehouse, district)
         if d != guidata.FILENONE:
             self.distanceLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.distanceFile = d
         else:
             self.distanceLabel.setText(guidata.FILENONE)
         if w != guidata.FILENONE:
             self.weightLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.weightFile = w
         else:
             self.weightLabel.setText(guidata.FILENONE)
         return
@@ -250,6 +256,7 @@ class InputTab(guidefault.DefaultTab):
         self.trucks.setText(t)
         if c != guidata.FILENONE:
             self.costLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.costFile = c
         else:    
             self.costLabel.setText(guidata.FILENONE)
         return
@@ -352,6 +359,24 @@ class InputTab(guidefault.DefaultTab):
         """
         self.changeUploadedFile(self.COSTFILE)
 
+    def distanceEButtonClicked(self):
+        """
+        Handles when distance edit button is clicked
+        """
+        self.editUploadedFile(self.DISTANCEFILE)
+
+    def weightEButtonClicked(self):
+        """
+        Handles when weight edit button is clicked
+        """
+        self.editUploadedFile(self.WEIGHTFILE)
+    
+    def costEButtonClicked(self):
+        """
+        Handles when cost edit button is clicked
+        """
+        self.editUploadedFile(self.COSTFILE)
+
     def saveButtonClicked(self):
         """
         Handles when save button is clicked
@@ -395,3 +420,19 @@ class InputTab(guidefault.DefaultTab):
             elif fileType == self.COSTFILE:
                 self.costFile = fileName[0]
                 self.costLabel.setText(fileName[0])
+
+    def editUploadedFile(self, fileType):
+        """
+        Opens up a file using Excel for editing
+        @param fileType Use constants DISTANCEFILE, etc...
+        """
+        # TODO: This won't work on MAC, test for MAC
+        theFile = ""
+        if fileType == self.DISTANCEFILE:
+            theFile = self.distanceFile
+        elif fileType == self.WEIGHTFILE:
+            theFile = self.weightFile
+        elif fileType == self.COSTFILE:
+            theFile = self.costFile
+        theFilePart = theFile.rpartition('\\')
+        os.system("start EXCEL.EXE \"%s\"" % theFile)
