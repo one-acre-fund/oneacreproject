@@ -18,7 +18,7 @@ class MainWindow(QTabWidget):
         inputTab = guiinput.InputTab()
         outputTab = guioutput.OutputTab()
         
-        self.resize(800, 600)
+        self.resize(860, 645)
         self.addTab(inputTab, "Input")
         self.addTab(outputTab, "Output")
         self.setWindowTitle('<Application Name>')

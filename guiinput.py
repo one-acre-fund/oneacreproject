@@ -65,6 +65,7 @@ class InputTab(guidefault.DefaultTab):
         (costBox, costSButton, costEButton, self.costLabel) \
             = self.createSelectBox("Select Cost Matrix", "")
         warehouseButton = self.createWButton("Add New Warehouse")
+        warehouseDButton = self.createWButton("Delete Warehouse")
         
         (districtBox, self.districtCombo) = self.createComboBox("District:", [], 0)
         (distanceBox, distanceSButton, distanceEButton, self.distanceLabel) \
@@ -72,15 +73,14 @@ class InputTab(guidefault.DefaultTab):
         (weightBox, weightSButton, weightEButton, self.weightLabel) \
             = self.createSelectBox("Select Site Weights", "")
         districtButton = self.createWButton("Add New District")
+        districtDButton = self.createWButton("Delete District")
         
         botBox = QHBoxLayout()
         saveButton = QPushButton("Save")
         solveButton = QPushButton("Solve")
-        deleteButton = QPushButton("Delete")
         botBox.addStretch(1)
         botBox.addWidget(saveButton)
         botBox.addWidget(solveButton)
-        botBox.addWidget(deleteButton)
         botBox.addStretch(1)
 
         mainBox.addWidget(title)
@@ -91,11 +91,13 @@ class InputTab(guidefault.DefaultTab):
         mainBox.addLayout(trucksBox)
         mainBox.addLayout(costBox)
         mainBox.addWidget(warehouseButton)
+        mainBox.addWidget(warehouseDButton)
         mainBox.addWidget(self.hLine())
         mainBox.addLayout(districtBox)
         mainBox.addLayout(distanceBox)
         mainBox.addLayout(weightBox)
         mainBox.addWidget(districtButton)
+        mainBox.addWidget(districtDButton)
         mainBox.addWidget(self.hLine())
         mainBox.addStretch(1)
         mainBox.addLayout(botBox)
@@ -105,7 +107,9 @@ class InputTab(guidefault.DefaultTab):
         self.warehouseCombo.currentTextChanged.connect(self.warehouseChanged)
         self.districtCombo.currentTextChanged.connect(self.districtChanged)
         warehouseButton.clicked.connect(self.warehouseButtonClicked)
+        warehouseDButton.clicked.connect(self.warehouseDButtonClicked)
         districtButton.clicked.connect(self.districtButtonClicked)
+        districtDButton.clicked.connect(self.districtDButtonClicked)
         distanceSButton.clicked.connect(self.distanceSButtonClicked)
         weightSButton.clicked.connect(self.weightSButtonClicked)
         costSButton.clicked.connect(self.costSButtonClicked)
@@ -118,10 +122,12 @@ class InputTab(guidefault.DefaultTab):
         self.warehouseWidgets.append(self.trucks)
         self.warehouseWidgets.append(costSButton)
         self.warehouseWidgets.append(costEButton)
+        self.warehouseWidgets.append(warehouseDButton)
         self.districtWidgets.append(distanceSButton)
         self.districtWidgets.append(distanceEButton)
         self.districtWidgets.append(weightSButton)
         self.districtWidgets.append(weightEButton)
+        self.districtWidgets.append(districtDButton)
 
         self.loadAllData(None, None)
     
@@ -376,6 +382,42 @@ class InputTab(guidefault.DefaultTab):
         Handles when cost edit button is clicked
         """
         self.editUploadedFile(self.COSTFILE)
+    
+    def warehouseDButtonClicked(self):
+        """
+        Handles when the delete warehouse button is clicked
+        """
+        name = self.warehouseCombo.currentText()
+        reply = QMessageBox.question(self, "Delete Warehouse", 
+                "Are you you want to delete warehouse %s?" % name,
+                QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            success, errorString = guidata.deleteWarehouse(name)
+            if not success:
+                QMessageBox.critical(self, "Error", errorString)
+                return
+            if errorString:
+                QMessageBox.warning(self, "Warning", errorString)
+            self.loadAllData(None, None)
+
+    def districtDButtonClicked(self):
+        """
+        Handles when the delete district button is clicked
+        """
+        warehouseName = self.warehouseCombo.currentText()
+        name = self.districtCombo.currentText()
+        reply = QMessageBox.question(self, "Delete District", 
+                "Are you you want to delete district %s from warehouse %s?" 
+                % (name, warehouseName), QMessageBox.Yes|QMessageBox.No, 
+                QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            success, errorString = guidata.deleteDistrict(warehouseName, name)
+            if not success:
+                QMessageBox.critical(self, "Error", errorString)
+                return
+            if errorString:
+                QMessageBox.warning(self, "Warning", errorString)
+            self.loadDistricts(None)
 
     def saveButtonClicked(self):
         """
@@ -402,7 +444,7 @@ class InputTab(guidefault.DefaultTab):
         self.weightFile = guidata.FILENONE
         self.costFile = guidata.FILENONE
         self.loadAllData(None, None)
-        
+    
     def changeUploadedFile(self, fileType):
         """
         Listener that pops up a file dialog to allow user to change uploaded file
@@ -434,5 +476,4 @@ class InputTab(guidefault.DefaultTab):
             theFile = self.weightFile
         elif fileType == self.COSTFILE:
             theFile = self.costFile
-        theFilePart = theFile.rpartition('\\')
-        os.system("start EXCEL.EXE \"%s\"" % theFile)
+        os.startfile(theFile)

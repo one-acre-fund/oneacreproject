@@ -34,6 +34,18 @@ def saveJsonData():
                 % (indexFile, dataDir, e.strerror))
     return None
 
+def removeFile(name):
+    """
+    Attempts to remove the file, ignores errors
+    @param name Does nothing if FILENONE passed in
+    """
+    if name == FILENONE:
+        return
+    try:
+        os.unlink(name)
+    except OSError:
+        return
+
 def addWarehouse(warehouseName):
     """
     Adds a new warehouse
@@ -61,6 +73,22 @@ def addWarehouse(warehouseName):
         return (True, "Warehouse was added, but " + error)
     return (True, "")
 
+def deleteWarehouse(warehouseName):
+    """
+    Deletes the indicated warehouse
+    @param warehouseName
+    @return (success, errorString) as a tuple, success is True/False
+    """
+    if warehouseName not in jsonData:
+        return (False, "Warehouse %s already deleted." 
+                % warehouseName)
+    removeFile(jsonData[warehouseName][costSuffix])
+    jsonData.pop(warehouseName)
+    error = saveJsonData()
+    if error:
+        return (True, "Warehouse was deleted, but " + error)
+    return (True, "")
+
 def getWarehouses():
     """
     Returns a list of warehouse names, sorted alphabetically
@@ -85,7 +113,7 @@ def addDistrict(warehouseName, districtName):
     except OSError:
         return (False, "%s is not a legal file name, please remove illegal characters." 
                 % (districtName))
-    if districtName in jsonData[warehouseName]:
+    if districtName in jsonData[warehouseName][districts]:
         return (False, "There is already a district named %s added to warehouse %s"
                 % (districtName, warehouseName))
     jsonData[warehouseName][districts][districtName] = {}
@@ -94,6 +122,24 @@ def addDistrict(warehouseName, districtName):
     error = saveJsonData()
     if error:
         return (True, "District was added, but " + error)
+    return (True, "")
+
+def deleteDistrict(warehouseName, districtName):
+    """
+    Deletes the indicated district
+    @param warehouseName
+    @param districtName
+    @return (success, errorString) as a tuple, success is True/False
+    """
+    if districtName not in jsonData[warehouseName][districts]:
+        return (False, "District %s already deleted from warehouse %s." % 
+                (districtName, warehouseName))
+    removeFile(jsonData[warehouseName][districts][districtName][distanceSuffix])
+    removeFile(jsonData[warehouseName][districts][districtName][weightSuffix])
+    jsonData[warehouseName][districts].pop(districtName)
+    error = saveJsonData()
+    if error:
+        return (True, "District was deleted, but " + error)
     return (True, "")
 
 def getDistricts(warehouseName):
