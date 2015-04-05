@@ -3,7 +3,13 @@ import sys
 import shutil
 import json
 
-# guidata module for saving/loading data
+# File default Text
+FILENONE = "None Selected."
+
+# guidata global jsonData dictionary
+jsonData = None
+
+# guidata storage files and indices
 dataDir = "data"
 indexFile = "index.json"
 districts = "districts"
@@ -13,8 +19,6 @@ costSuffix = "_cm"
 destinationsSuffix = "_dt"
 trucksSuffix = "_tw"
 
-# guidata global jsonData dictionary
-jsonData = None
 
 def saveJsonData():
     """
@@ -26,7 +30,7 @@ def saveJsonData():
         with open(indexFile, 'w') as f:
             json.dump(jsonData, f, indent=4)
     except OSError as e:
-        return ("unable to save to %s in directory %s. %s" 
+        return ("unable to write to hard drive (%s in directory %s). %s" 
                 % (indexFile, dataDir, e.strerror))
     return None
 
@@ -50,7 +54,7 @@ def addWarehouse(warehouseName):
     jsonData[warehouseName] = {}
     jsonData[warehouseName][destinationsSuffix] = ""
     jsonData[warehouseName][trucksSuffix] = ""
-    jsonData[warehouseName][costSuffix] = None
+    jsonData[warehouseName][costSuffix] = FILENONE
     jsonData[warehouseName][districts] = {}
     error = saveJsonData()
     if error:
@@ -85,8 +89,8 @@ def addDistrict(warehouseName, districtName):
         return (False, "There is already a district named %s added to warehouse %s"
                 % (districtName, warehouseName))
     jsonData[warehouseName][districts][districtName] = {}
-    jsonData[warehouseName][districts][districtName][distanceSuffix] = None
-    jsonData[warehouseName][districts][districtName][weightSuffix] = None
+    jsonData[warehouseName][districts][districtName][distanceSuffix] = FILENONE
+    jsonData[warehouseName][districts][districtName][weightSuffix] = FILENONE
     error = saveJsonData()
     if error:
         return (True, "District was added, but " + error)
@@ -118,44 +122,69 @@ def copyFile(source, destination):
                 % (source, destination, e.strerror))
     return None
 
+def copyFileHelper(orig, source, destination):
+    """
+    Helper function for saveInfo()
+    Conditionally copies file from source to destination
+    @param orig
+    @param source
+    @param destination
+    @return (attempted, errorString, destination), attempted is False if copying not attempted
+    """
+    if source == FILENONE:
+        return (False, "", destination)
+    source = os.path.abspath(source)
+    if orig == source:
+        return (False, "", destination)
+    sourcePart = source.rpartition('.')
+    suffix = '.' + sourcePart[2]
+    destination = os.path.abspath(destination + suffix)
+    return (True, copyFile(source, destination), destination)
+
 def saveInfo(warehouseName, districtName, destPerTruck, 
         truckPerW, distanceFile, weightFile, costFile):
     """
-    Saves all data for an associated distrct and warehouse
+    Saves all data for an associated district and warehouse
     If districtName is empty, this only saves the warehouse data
-    @return None if successful, or an error string if there is an error
+    @return (success, errorString) as a tuple, success is True/False
     """
-    # TODO: Finish
-    global jsonData
-    
-    name = warehouseName + "_" + districtName
     # Save meta data
-    #if districtName:
-    #    jsonData[districtname][distanceSuffix] = None
-    #    jsonData[name][weightSuffix] = None
-    #jsonData[districtName][costSuffix] = None
+    global jsonData
     jsonData[warehouseName][destinationsSuffix] = destPerTruck
     jsonData[warehouseName][trucksSuffix] = truckPerW
     
-    ## Obtain abs paths for all files
-    #distanceFileO = jsonData[name][distanceSuffix]
-    #weightFileO = jsonData[name][weightSuffix]
-    #costFileO = jsonData[name][costSuffix]
-    #distanceFileS = os.path.abspath(distanceFile)
-    #weightFileS = os.path.abspath(weightFile)
-    #costFileS = os.path.abspath(costFile)
-    #distanceFileN = os.path.abspath(name+distanceSuffix)
-    #weightFileN = os.path.abspath(name+weightSuffix)
-    #costFileN = os.path.abspath(name+costSuffix)
-    #
-    ## Do the copying
-    #error = None
-    #if distanceFileS != distanceFileO:
-    #    if not
-        
-    error = saveJsonData()
+    # Full name
+    name = ""
+    if districtName:
+        name = warehouseName + "_" + districtName
 
-    return None
+    # Attempt to copy files
+    attempted, error, f = copyFileHelper(jsonData[warehouseName][costSuffix], 
+                          costFile, warehouseName+costSuffix)
+    if attempted and error:
+        return (False, error)
+    if attempted:
+        jsonData[warehouseName][costSuffix] = f
+    if districtName:
+        attempted, error, f = copyFileHelper(jsonData[warehouseName][districts][districtName][distanceSuffix],
+                              distanceFile, name+distanceSuffix)
+        if attempted and error:
+            return (False, error)
+        if attempted:
+            jsonData[warehouseName][districts][districtName][distanceSuffix] = f
+        attempted, error, f = copyFileHelper(jsonData[warehouseName][districts][districtName][weightSuffix],
+                              weightFile, name+weightSuffix)
+        if attempted and error:
+            return (False, error)
+        if attempted:
+            jsonData[warehouseName][districts][districtName][weightSuffix] = f
+    
+    # Save to json
+    error = saveJsonData()
+    if error:
+        return (False, "Unfortunately, " + error)
+    return (True, "")
+
 
 def getWarehouseInfo(warehouseName):
     """

@@ -12,6 +12,11 @@ class InputTab(guidefault.DefaultTab):
     WEIGHTFILE = "Site Weights"
     COSTFILE = "Cost Matrix"
     
+    # Save file locations
+    distanceFile = guidata.FILENONE
+    weightFile = guidata.FILENONE
+    costFile = guidata.FILENONE
+
     # Instance variable widgets needed when "save" is clicked
     warehouseCombo = None
     destinations = None
@@ -203,14 +208,14 @@ class InputTab(guidefault.DefaultTab):
             return
         self.enableDistrictWidgets(True)
         (d, w) = guidata.getDistrictInfo(warehouse, district)
-        if d:
-            self.distanceLabel.setText(d)
+        if d != guidata.FILENONE:
+            self.distanceLabel.setText("Saved in %s directory." % guidata.dataDir)
         else:
-            self.distanceLabel.setText("None Selected.")
-        if w:
-            self.weightLabel.setText(w)
+            self.distanceLabel.setText(guidata.FILENONE)
+        if w != guidata.FILENONE:
+            self.weightLabel.setText("Saved in %s directory." % guidata.dataDir)
         else:
-            self.weightLabel.setText("None Selected.")
+            self.weightLabel.setText(guidata.FILENONE)
         return
    
     def loadDistricts(self, districtName):
@@ -243,10 +248,10 @@ class InputTab(guidefault.DefaultTab):
         (d, t, c) = guidata.getWarehouseInfo(warehouse)
         self.destinations.setText(d)
         self.trucks.setText(t)
-        if c:
-            self.costLabel.setText(c)
-        else:
-            self.costLabel.setText("None Selected.")
+        if c != guidata.FILENONE:
+            self.costLabel.setText("Saved in %s directory." % guidata.dataDir)
+        else:    
+            self.costLabel.setText(guidata.FILENONE)
         return
  
     def loadAllData(self, warehouseName, districtName):
@@ -351,15 +356,28 @@ class InputTab(guidefault.DefaultTab):
         """
         Handles when save button is clicked
         """
-        # TODO
         warehouseName = self.warehouseCombo.currentText()
         districtName = self.districtCombo.currentText()
         if not warehouseName:
+            QMessageBox.critical(self, "Error", "Please add a Warehouse first.")
             return
-        error = guidata.saveInfo(warehouseName, districtName, 
-                                 self.destinations.text(), self.trucks.text(), "", "", "")
-        return
-    
+        success, errorString = guidata.saveInfo(warehouseName, districtName, 
+                                                self.destinations.text(), self.trucks.text(), 
+                                                self.distanceFile, 
+                                                self.weightFile, 
+                                                self.costFile)
+        if not success:
+            QMessageBox.critical(self, "Error", errorString)
+            return
+        if errorString:
+            QMessageBox.warning(self, "Warning", errorString)
+        else:
+            QMessageBox.information(self, "Success", "Saved successfully")
+        self.distanceFile = guidata.FILENONE
+        self.weightFile = guidata.FILENONE
+        self.costFile = guidata.FILENONE
+        self.loadAllData(None, None)
+        
     def changeUploadedFile(self, fileType):
         """
         Listener that pops up a file dialog to allow user to change uploaded file
@@ -369,11 +387,11 @@ class InputTab(guidefault.DefaultTab):
                                                "", "*.xls *.xlsx")
         if fileName[0] != "":
             if fileType == self.DISTANCEFILE:
-                currentDistanceFile = fileName[0]
+                self.distanceFile = fileName[0]
                 self.distanceLabel.setText(fileName[0])
             elif fileType == self.WEIGHTFILE:
-                currentWeightFile = fileName[0]
+                self.weightFile = fileName[0]
                 self.weightLabel.setText(fileName[0])
             elif fileType == self.COSTFILE:
-                currentCostFile = fileName[0]
+                self.costFile = fileName[0]
                 self.costLabel.setText(fileName[0])
