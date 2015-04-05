@@ -1,6 +1,5 @@
-import guidefault
-import guidata
-import os
+import guidefault, guidata
+import os, sys, subprocess
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
                              QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
@@ -219,12 +218,12 @@ class InputTab(guidefault.DefaultTab):
         self.enableDistrictWidgets(True)
         (d, w) = guidata.getDistrictInfo(warehouse, district)
         if d != guidata.FILENONE:
-            self.distanceLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.distanceLabel.setText("Saved in data directory.")
             self.distanceFile = d
         else:
             self.distanceLabel.setText(guidata.FILENONE)
         if w != guidata.FILENONE:
-            self.weightLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.weightLabel.setText("Saved in data directory.")
             self.weightFile = w
         else:
             self.weightLabel.setText(guidata.FILENONE)
@@ -261,7 +260,7 @@ class InputTab(guidefault.DefaultTab):
         self.destinations.setText(d)
         self.trucks.setText(t)
         if c != guidata.FILENONE:
-            self.costLabel.setText("Saved in %s directory." % guidata.dataDir)
+            self.costLabel.setText("Saved in data directory.")
             self.costFile = c
         else:    
             self.costLabel.setText(guidata.FILENONE)
@@ -418,10 +417,11 @@ class InputTab(guidefault.DefaultTab):
             if errorString:
                 QMessageBox.warning(self, "Warning", errorString)
             self.loadDistricts(None)
-
-    def saveButtonClicked(self):
+    
+    def saveInfo(self):
         """
-        Handles when save button is clicked
+        Saves info
+        @return (success, errorString) as a tuple, success is True/False
         """
         warehouseName = self.warehouseCombo.currentText()
         districtName = self.districtCombo.currentText()
@@ -433,6 +433,13 @@ class InputTab(guidefault.DefaultTab):
                                                 self.distanceFile, 
                                                 self.weightFile, 
                                                 self.costFile)
+        return (success, errorString)
+
+    def saveButtonClicked(self):
+        """
+        Handles when save button is clicked
+        """
+        success, errorString = self.saveInfo()
         if not success:
             QMessageBox.critical(self, "Error", errorString)
             return
@@ -444,6 +451,16 @@ class InputTab(guidefault.DefaultTab):
         self.weightFile = guidata.FILENONE
         self.costFile = guidata.FILENONE
         self.loadAllData(None, None)
+    
+    def solveButtonClicked(self):
+        """
+        Handles when solve button is clicked
+        """
+        # TODO: Integration
+        success, errorString = self.saveInfo()
+        if not success:
+            QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
+            return
     
     def changeUploadedFile(self, fileType):
         """
@@ -468,7 +485,6 @@ class InputTab(guidefault.DefaultTab):
         Opens up a file using Excel for editing
         @param fileType Use constants DISTANCEFILE, etc...
         """
-        # TODO: This won't work on MAC, test for MAC
         theFile = ""
         if fileType == self.DISTANCEFILE:
             theFile = self.distanceFile
@@ -476,4 +492,10 @@ class InputTab(guidefault.DefaultTab):
             theFile = self.weightFile
         elif fileType == self.COSTFILE:
             theFile = self.costFile
-        os.startfile(theFile)
+        else:
+            return
+        if sys.platform == "win32":
+            os.startfile(theFile)
+        else:
+            opener ="open" if sys.platform == "darwin" else "xdg-open"
+            subprocess.call([opener, theFile])

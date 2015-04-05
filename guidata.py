@@ -244,6 +244,13 @@ def getWarehouseInfo(warehouseName):
     c = jsonData[warehouseName][costSuffix]
     return (d, t, c)
 
+def getAllWarehouseInfo(warehouseName):
+    """
+    Returns all the 
+    """
+    # TODO: Finish
+    return
+
 def getDistrictInfo(warehouseName, districtName):
     """
     Returns the associated info with the given district
@@ -262,7 +269,16 @@ def createDataDir():
     Note that this is used to save application related state
     @return True if success, False if failure
     """
-    # TODO: Make this independent of where the program is run
+    # Get the path to executable
+    global dataDir
+    applicationPath = ""
+    if getattr(sys, "frozen", False):
+        applicationPath = os.path.dirname(sys.executable)
+    elif __file__:
+        applicationPath = os.path.dirname(__file__)
+    dataDir = os.path.join(applicationPath, dataDir)
+    
+    # Make sure it exists or try to create it
     if os.path.isdir(dataDir):
         return True
     if os.path.exists(dataDir):
