@@ -19,6 +19,21 @@ costSuffix = "_cm"
 destinationsSuffix = "_dt"
 trucksSuffix = "_tw"
 
+def isInt(num):
+    try:
+        int(num)
+    except ValueError:
+        return False
+    return True
+
+def isPosInt(num):
+    try:
+        n = int(num)
+        if n <= 0:
+            return False
+    except ValueError:
+        return False
+    return True
 
 def saveJsonData():
     """
@@ -196,6 +211,10 @@ def saveInfo(warehouseName, districtName, destPerTruck,
     """
     # Save meta data
     global jsonData
+    if destPerTruck and not isPosInt(destPerTruck):
+        return (False, "Destinations/Truck must be a positive integer")
+    if truckPerW and not isPosInt(truckPerW):
+        return (False, "Trucks/Warehouse/Day must be a positive integer")
     jsonData[warehouseName][destinationsSuffix] = destPerTruck
     jsonData[warehouseName][trucksSuffix] = truckPerW
     
@@ -246,10 +265,17 @@ def getWarehouseInfo(warehouseName):
 
 def getAllWarehouseInfo(warehouseName):
     """
-    Returns all the 
+    Returns all the info associated with the given warehouse
+    Ie - includes the info associated with all districts for the warehouse
+    districts is an array of tuples (districtName, distanceFile, weightFile)
+    @param warehouseName
+    @return (destPerTruck, truckPerW, costFile, districtList)
     """
-    # TODO: Finish
-    return
+    (d, t, c) = getWarehouseInfo(warehouseName)
+    districtList = []
+    for name, districtDict in jsonData[warehouseName][districts].items():
+        districtList.append((name, districtDict[distanceSuffix], districtDict[weightSuffix])) 
+    return (d, t, c, districtList)
 
 def getDistrictInfo(warehouseName, districtName):
     """
@@ -313,7 +339,7 @@ def loadJsonData():
     @return True if success, False if failure
     """
     global jsonData
-    if os.path.isfile(indexFile) and not os.path.isdir(dataDir):
+    if os.path.isfile(indexFile) and not os.path.isdir(indexFile):
         try:
             with open(indexFile, 'r+') as f:
                 jsonData = json.load(f)
@@ -337,6 +363,7 @@ def init():
     Initializes data for the application
     @return True if success, False if failure
     """
+    #TODO: Better error messages
     if not createDataDir():
         return False
     if not changeToDataDir():

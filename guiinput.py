@@ -116,17 +116,21 @@ class InputTab(guidefault.DefaultTab):
         weightEButton.clicked.connect(self.weightEButtonClicked)
         costEButton.clicked.connect(self.costEButtonClicked)
         saveButton.clicked.connect(self.saveButtonClicked)
+        solveButton.clicked.connect(self.solveButtonClicked)
         
         self.warehouseWidgets.append(self.destinations)
         self.warehouseWidgets.append(self.trucks)
         self.warehouseWidgets.append(costSButton)
         self.warehouseWidgets.append(costEButton)
         self.warehouseWidgets.append(warehouseDButton)
+        self.warehouseWidgets.append(saveButton)
+        self.warehouseWidgets.append(districtButton)
         self.districtWidgets.append(distanceSButton)
         self.districtWidgets.append(distanceEButton)
         self.districtWidgets.append(weightSButton)
         self.districtWidgets.append(weightEButton)
         self.districtWidgets.append(districtDButton)
+        self.districtWidgets.append(solveButton)
 
         self.loadAllData(None, None)
     
@@ -222,17 +226,19 @@ class InputTab(guidefault.DefaultTab):
             self.distanceFile = d
         else:
             self.distanceLabel.setText(guidata.FILENONE)
+            self.distanceFile = guidata.FILENONE
         if w != guidata.FILENONE:
             self.weightLabel.setText("Saved in data directory.")
             self.weightFile = w
         else:
             self.weightLabel.setText(guidata.FILENONE)
+            self.weightFile = guidata.FILENONE
         return
    
     def loadDistricts(self, districtName):
         """
         Loads the district list and its associated data onto the GUI
-        If districtName is empty, the currently selected district is picked
+        If districtName is empty, the first district is picked
         @param districtName
         """
         warehouse = self.warehouseCombo.currentText()
@@ -247,7 +253,7 @@ class InputTab(guidefault.DefaultTab):
     def loadWarehouseData(self, districtName):
         """
         Loads all data associated with the currently selected warehouse onto the GUI
-        If districtName is empty, the currently selected district is picked
+        If districtName is empty, the first district is picked
         @param districtName
         """
         self.loadDistricts(districtName)
@@ -264,14 +270,15 @@ class InputTab(guidefault.DefaultTab):
             self.costFile = c
         else:    
             self.costLabel.setText(guidata.FILENONE)
+            self.costFile = guidata.FILENONE
         return
  
     def loadAllData(self, warehouseName, districtName):
         """
         Loads all data, including the lists, onto the GUI
         Clears any previous data loaded to the GUI
-        If warehouseName is empty, the currently selected warehouse is picked
-        If districtName is empty, the currently selected district is picked
+        If warehouseName is empty, the first warehouse is picked
+        If districtName is empty, the first district is picked
         @param warehouseName
         @param districtName
         """
@@ -425,9 +432,6 @@ class InputTab(guidefault.DefaultTab):
         """
         warehouseName = self.warehouseCombo.currentText()
         districtName = self.districtCombo.currentText()
-        if not warehouseName:
-            QMessageBox.critical(self, "Error", "Please add a Warehouse first.")
-            return
         success, errorString = guidata.saveInfo(warehouseName, districtName, 
                                                 self.destinations.text(), self.trucks.text(), 
                                                 self.distanceFile, 
@@ -439,6 +443,8 @@ class InputTab(guidefault.DefaultTab):
         """
         Handles when save button is clicked
         """
+        warehouseName = self.warehouseCombo.currentText()
+        districtName = self.districtCombo.currentText()
         success, errorString = self.saveInfo()
         if not success:
             QMessageBox.critical(self, "Error", errorString)
@@ -447,20 +453,53 @@ class InputTab(guidefault.DefaultTab):
             QMessageBox.warning(self, "Warning", errorString)
         else:
             QMessageBox.information(self, "Success", "Saved successfully")
-        self.distanceFile = guidata.FILENONE
-        self.weightFile = guidata.FILENONE
-        self.costFile = guidata.FILENONE
-        self.loadAllData(None, None)
+        self.loadAllData(warehouseName, districtName)
     
     def solveButtonClicked(self):
         """
         Handles when solve button is clicked
         """
-        # TODO: Integration
+        warehouseName = self.warehouseCombo.currentText()
+        districtName = self.districtCombo.currentText()
         success, errorString = self.saveInfo()
+        if success:
+            self.loadAllData(warehouseName, districtName)
+        
+        (d, t, c, districtList) = guidata.getAllWarehouseInfo(warehouseName)
+        if not d:
+            QMessageBox.critical(self, "Error", "Please enter a valid Destinations/Truck value.")
+            return
+        if not t:
+            QMessageBox.critical(self, "Error", "Please enter a valid Trucks/Warehouse/Day value.")
+            return
+        if c == guidata.FILENONE:
+            QMessageBox.critical(self, "Error", "Please upload a Cost Matrix first.")
+            return
+        
+        goodDistricts = []
+        badDistricts = []
+        for district in districtList:
+            if district[1] == guidata.FILENONE or district[2] == guidata.FILENONE:
+                badDistricts.append(district)
+            else:
+                goodDistricts.append(district)
+        if len(goodDistricts) == 0:
+            QMessageBox.critical(self, "Error", "Upload all spreadsheets for at least one district first.")
+            return
+        if len(badDistricts) > 0:
+            text = ("District data for the following districts will not be included "
+                    "because one or more associated spreadsheets are missing: \n") 
+            for district in badDistricts:
+                text += "* " + district[0] + "\n"
+            text += "Do you still want to continue?"
+            reply = QMessageBox.question(self, "Run Solver", text,
+                    QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
+            if reply != QMessageBox.Yes:
+                return
+
+        # TODO: Integration
         if not success:
             QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
-            return
     
     def changeUploadedFile(self, fileType):
         """
