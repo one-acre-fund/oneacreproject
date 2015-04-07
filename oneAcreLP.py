@@ -212,6 +212,16 @@ for m in range(0,len(truckSize)):
 # Create the prob variable
 prob=LpProblem("TheOneAcre",LpMinimize)
 
+c = [[[[0 for n in upperDist]for m in truckSize] for j in location]for i in location]
+for i in range(0,len(location)):
+    for j in range(0,len(location)):
+        for m in range(0,len(truckSize)):
+            for n in range(0,len(upperDist)):
+                if(costMatrix[m][n]*distBrackets[i][j][n]*truckSize[m]>fixedC[m]):
+                    c[i][j][m][n]=costMatrix[m][n]*distBrackets[i][j][n]*truckSize[m]
+                else:
+                    c[i][j][m][n] = fixedC[m]
+
 # Decision Variable
 # x1 = LpVariable("name",<lowerbound or None>,<upperbound or None>,<type LpInteger or LpContinuous>)
 x = [[[[0 for n in upperDist]for m in truckSize] for j in location]for i in location]
@@ -223,7 +233,7 @@ for i in range(0,len(location)):
 
 
 # Add objective function always
-prob+= lpSum((costMatrix[m][n]*distBrackets[i][j][n]*truckSize[m]+fixedC[m])*x[i][j][m][n] for i in range(0,len(location)) for j in range(i,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))), "Objective Function"
+prob+= lpSum(c[i][j][m][n]*x[i][j][m][n] for i in range(0,len(location)) for j in range(i,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))), "Objective Function"
 
 # Next we add constraints
 
