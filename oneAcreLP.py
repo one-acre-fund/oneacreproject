@@ -67,8 +67,6 @@ for row in range(1,nrow_costM):
 demand_sheet = book.sheet_by_index(2)
 nrow_demandM = demand_sheet.nrows
 ncol_demandM = demand_sheet.ncols
-print nrow_demandM
-print ncol_demandM
 demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
 for row in range(0,nrow_demandM):
     demand_sheet.row_values(row)
@@ -115,8 +113,7 @@ for row in range(1,nrow_costM):
 demand_sheet = book.sheet_by_index(2)
 nrow_demandM = demand_sheet.nrows
 ncol_demandM = demand_sheet.ncols
-print nrow_demandM
-print ncol_demandM
+
 demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
 for row in range(0,nrow_demandM):
     demand_sheet.row_values(row)
@@ -130,6 +127,7 @@ for row in range(1,nrow_demandM):
 ################## End ##########################################
 ################## Create decision Variable #####################
 
+################## Creation of LP starts here ###################
 # Creates a list of locations including warehouse
 location = [0 for i in LOCATIONS]
 for i in range(0,len(LOCATIONS)):
@@ -141,17 +139,21 @@ last = len(location)
 truckSize = [0 for m in TRUCK_SIZES]
 for m in range(0,len(TRUCK_SIZES)):
     truckSize[m]=TRUCK_SIZES[m]
-# Create list of distances denominations
-distanceCost=[0 for n in DISTANCE_RANGES]
+# Create Upper and Lower limits of distances denominations
+upperDist=[0 for n in DISTANCE_RANGES]
 for n in range(0,len(DISTANCE_RANGES)):
-    distanceCost[n]=DISTANCE_RANGES[n]
+    upperDist[n]=DISTANCE_RANGES[n]
+
+lowerDist=[0 for n in DISTANCE_RANGES]
+for n in range(1,len(DISTANCE_RANGES)):
+    lowerDist[n]=upperDist[n-1]
 
 # Create cost matrix
-costMatrix = [[0 for n in distanceCost] for m in truckSize]
+costMatrix = [[0 for n in upperDist] for m in truckSize]
 # Assign cost matrix to c(m,n)
 # Read some csv assign
 for m in range(0,len(truckSize)):
-    for n in range(0,len(distanceCost)):
+    for n in range(0,len(upperDist)):
         costMatrix[m][n]=new_costMatrix[m][n]
 
 # Create distance matrix
@@ -184,6 +186,24 @@ for i in range(0,len(location)):
         else:
             demandMat[i][j]=demand[i]+demand[j]
 
+# Create list of residual distance
+
+resDist = [[[0 for n in upperDist] for j in location]for i in location]
+for i in range(0,len(location)):
+    for j in range(0,len(location)):
+        for n in range(0,len(upperDist)):
+            if (routeDist[i][j] >= lowerDist[n]):
+                resDist[i][j][n] = routeDist[i][j] - lowerDist[n]
+            else:
+                resDist[i][j][n] = 0
+
+# Create Distance give distance brackets
+distBrackets = [[[0 for n in upperDist] for j in location]for i in location]
+for i in range(0,len(location)):
+    for j in range(0,len(location)):
+        for n in range(0,len(upperDist)):
+            distBrackets[i][j][n] = lowerDist[n] + resDist[i][j][n]
+
 # Create fixed costs
 fixedC = [0 for m in truckSize]
 for m in range(0,len(truckSize)):
@@ -194,37 +214,42 @@ prob=LpProblem("TheOneAcre",LpMinimize)
 
 # Decision Variable
 # x1 = LpVariable("name",<lowerbound or None>,<upperbound or None>,<type LpInteger or LpContinuous>)
-x = [[[[0 for n in distanceCost]for m in truckSize] for j in location]for i in location]
+x = [[[[0 for n in upperDist]for m in truckSize] for j in location]for i in location]
 for i in range(0,len(location)):
     for j in range(0,len(location)):
         for m in range(0,len(truckSize)):
-            for n in range(0,len(distanceCost)):
+            for n in range(0,len(upperDist)):
                 x[i][j][m][n]=LpVariable("x"+str(i)+"-"+str(j)+"-"+str(m)+"-"+str(n), 0, 1, LpBinary)
 
+
 # Add objective function always
-prob+= lpSum((costMatrix[m][n]*distanceMatrix[i][j]*demandMat[i][j]+fixedC[n])*x[i][j][m][n] for i in range(0,len(location)) for j in range(i,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(distanceCost))), "Objective Function"
+prob+= lpSum((costMatrix[m][n]*distBrackets[i][j][n]*truckSize[m]+fixedC[m])*x[i][j][m][n] for i in range(0,len(location)) for j in range(i,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))), "Objective Function"
 
 # Next we add constraints
 
 # A farm must be visited at one and only one truck
 for i in range(0,len(location)):
-    prob+= lpSum(x[i][j][m][n] for j in range(0,len(location)) for m in range(0,len(truckSize))) ==1, "Route Allocation A" +str(i)
+    prob+= lpSum(x[i][j][m][n] for j in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation A" +str(i)
 for j in range(0,len(location)):
-    prob+= lpSum(x[i][j][m][n] for i in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(distanceCost))) ==1, "Route Allocation B" +str(j)
+    prob+= lpSum(x[i][j][m][n] for i in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation B" +str(j)
 
 # X must be symmetrical
 for i in range(0,len(location)):
     for j in range(0,len(location)):
         for m in range(0,len(truckSize)):
-            for n in range(0,len(distanceCost)):
+            for n in range(0,len(upperDist)):
                 prob+= x[i][j][m][n] == x[j][i][m][n] , "Symmetrical Property" +str(i) + " "+str(j) + " "+str(m) + " "+str(n)
 
-# Weight and Distances constraint
+# Distances constraint
 for i in range(0,len(location)):
     for j in range(0,len(location)):
-        prob += lpSum(distanceCost[n] * lpSum(x[i][j][m][n] for m in range(0,len(truckSize)))for n in range(0,len(distanceCost))) >= distanceMatrix[i][j]* lpSum(x[i][j][m][n] for m in range(0,len(truckSize)) for n in range(0,len(distanceCost))), "Distance Constraint" +str(i) + " "+str(j)
-        #LOOK HERE DONT FORGET
-        prob += lpSum(truckSize[n] * lpSum(x[i][j][m][n] for n in range(0,len(distanceCost)))for m in range(0,len(truckSize))) >= demandMat[i][j]*lpSum(x[i][j][m][n] for m in range(0,len(truckSize)) for n in range(0,len(distanceCost))), "Weight Constraint" +str(i) + " "+str(j)
+        for n in range(0,len(upperDist)):
+            prob += upperDist[n] * lpSum(x[i][j][m][n] for m in range(0,len(truckSize))) >= distBrackets[i][j][n]* lpSum(x[i][j][m][n] for m in range(0,len(truckSize))), "Distance Constraint" +str(i) + " " +str(j) + " " +str(n)
+
+# Weight constraint
+for i in range(0,len(location)):
+    for j in range(0,len(location)):
+        prob += lpSum(truckSize[m] * lpSum(x[i][j][m][n] for n in range(0,len(upperDist)))for m in range(0,len(truckSize))) >= demandMat[i][j]*lpSum(x[i][j][m][n] for m in range(0,len(truckSize)) for n in range(0,len(upperDist))), "Weight Constraint" +str(i) + " "+str(j)
 
 # a .lp file needs to be created for processing
 prob.writeLP("OneAcre.lp")
@@ -240,9 +265,4 @@ print "Answer = ", value(prob.objective)
 
 print "Done!"
 print "Status:", LpStatus[prob.status]
-
-
-
-
-
 
