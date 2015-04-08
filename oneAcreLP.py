@@ -161,7 +161,7 @@ distanceMatrix = [[0 for i in range(0,len(location)+1)] for j in range(0,len(loc
 for i in range(0,len(location)+1):
     for j in range(0,len(location)+1):
         distanceMatrix[i][j]=new_distMatrix[i][j]
-
+# print (distanceMatrix)
 # Create demand for each location refer to computer plant example
 demand = [5 for i in location]
 for i in range(0,len(new_demandMatrix)):
@@ -172,9 +172,9 @@ routeDist = [[0 for i in range(0,len(location))] for j in range(0,len(location))
 for i in range(0,len(location)):
     for j in range(0,len(location)):
         if (i==j):
-            routeDist[i][j] = distanceMatrix[i][last-1]*2
+            routeDist[i][j] = distanceMatrix[i][last]*2
         else:
-            routeDist[i][j] = distanceMatrix[i][last-1]+distanceMatrix[j][last-1]+distanceMatrix[i][j]
+            routeDist[i][j] = distanceMatrix[i][last]+distanceMatrix[j][last]+distanceMatrix[i][j]
 
 
 # Create demand matrix
@@ -266,13 +266,27 @@ prob.writeLP("OneAcre.lp")
 prob.solve()
 # to check whether solution is unbounded etc we check value of prob.status
 # We have an array/dictionary to convert into text
-print "Status:", LpStatus[prob.status]
 # values of our decision variables can be printed as:
 for item in prob.variables():
-    print item.name, "=" , item.varValue
+    if(item.varValue == 1):
+        print item.name, "=" , item.varValue
 # print optimal value, value() helps in formating
-print "Answer = ", value(prob.objective)
-
-print "Done!"
 print "Status:", LpStatus[prob.status]
+
+list = []
+
+for i in range(0,len(location)):
+    for j in range(i,len(location)):
+        for m in range(0,len(truckSize)):
+            for n in range(0,len(upperDist)):
+                if((x[i][j][m][n]).varValue == 1.0):
+                    vec = [i,j,m,n]
+                    list.append(vec)
+
+print list
+
+for k in range(0,len(list)):
+    print "Route is taken from ",location[list[k][0]], "and ",location[list[k][1]],"with a demand of ",demandMat[list[k][0]][list[k][1]], "using " , truckSize[list[k][2]], "ton trucks, with distance ", routeDist[list[k][0]][list[k][1]], "travelling ", distBrackets[list[k][0]][list[k][1]][list[k][3]]
+
+print "Total Cost = $", value(prob.objective)
 
