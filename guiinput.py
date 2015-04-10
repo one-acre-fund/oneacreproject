@@ -161,11 +161,6 @@ class InputTab(guidefault.DefaultTab):
         box.addStretch(1)
         box.addWidget(combo)
         
-        if sys.platform == "darwin":
-            margins = box.contentsMargins();
-            margins.setBottom(margins.bottom() - 6);
-            box.setContentsMargins(margins);
-        
         return (box, combo)
     
     def createWButton(self, buttonText):
@@ -193,11 +188,6 @@ class InputTab(guidefault.DefaultTab):
         box.addWidget(label)
         box.addStretch(1)
         box.addWidget(text)
-        
-        if sys.platform == "darwin":
-            margins = box.contentsMargins();
-            margins.setBottom(margins.bottom() - 6);
-            box.setContentsMargins(margins);
 
         return (box, text)
     
@@ -223,11 +213,6 @@ class InputTab(guidefault.DefaultTab):
         box.addWidget(button2)
         box.addStretch(1)
         box.addWidget(label)
-        
-        if sys.platform == "darwin":
-            margins = box.contentsMargins();
-            margins.setBottom(margins.bottom() - 6);
-            box.setContentsMargins(margins);
 
         return (box, button1, button2, label)
 
