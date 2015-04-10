@@ -31,7 +31,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     if sys.platform == "win32":
         font = QFont("Arial", 11)
-    else:
+    elif sys.platform == "darwin":
         font = QFont("Arial", 16)
     app.setFont(font)
     window = MainWindow()
