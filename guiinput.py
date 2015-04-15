@@ -1,6 +1,6 @@
 import guidefault, guidata
 import os, sys, subprocess
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QMargins
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
                              QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
 
@@ -40,7 +40,10 @@ class InputTab(guidefault.DefaultTab):
         
         title = QLabel("Input")
         titleFont = title.font()
-        titleFont.setPointSize(12)
+        if sys.platform == "win32":
+            titleFont.setPointSize(12)
+        elif sys.platform == "darwin":
+            titleFont.setPointSize(17)
         titleFont.setBold(True)
         title.setFont(titleFont)
         title.setAlignment(Qt.AlignCenter)
@@ -53,7 +56,10 @@ class InputTab(guidefault.DefaultTab):
                              "Use the \"Edit\" buttons to make changes to previously saved spreadsheets. "
                              "Don't forget to click \"Save\" to save your changes.")
         descriptionFont = description.font()
-        descriptionFont.setPointSize(10)
+        if sys.platform == "win32":
+            descriptionFont.setPointSize(10)
+        elif sys.platform == "darwin":
+            descriptionFont.setPointSize(15)
         description.setFont(descriptionFont)
         description.setWordWrap(True)
         description.setAlignment(Qt.AlignJustify)

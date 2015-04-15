@@ -29,7 +29,10 @@ if __name__ == "__main__":
     if not guidata.init():
         sys.exit()
     app = QApplication(sys.argv)
-    font = QFont("Arial", 11)
+    if sys.platform == "win32":
+        font = QFont("Arial", 11)
+    elif sys.platform == "darwin":
+        font = QFont("Arial", 16)
     app.setFont(font)
     window = MainWindow()
     sys.exit(app.exec_())
