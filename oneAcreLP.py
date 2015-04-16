@@ -1,140 +1,120 @@
 #!/usr/bin/python
 from pulp import *
 import xlrd
-import xlwt
 import math
-################## Construct distance matrix ##################
-"""
-    - open and read an Excel file for distance matrix
-    - the python code and excel file should be located in same path/directory
+
+w = "Warehouse1"
+c= "OneAcreInputs.xlsx"
+districtList = [("district1", "OneAcreInputs.xlsx", "OneAcreInputs.xlsx"), ("district2", "OneAcreInputs.xlsx", "OneAcreInputs.xlsx")]
+
+def solve(w,c,districtList):
     """
-book = xlrd.open_workbook("OneAcreInputs.xlsx")
-dist_sheet = book.sheet_by_index(0)
-nrow_distM = dist_sheet.nrows
-ncol_distM = dist_sheet.ncols
-distMatrix = [[0 for col in range(0,ncol_distM)] for row in range(0,nrow_distM)]
-DISTMAT = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
-LOCATIONS = [0 for i in range(0,ncol_distM-2)]
-# Store the original data
-for row in range(0,nrow_distM):
-    dist_sheet.row_values(row)
-    for col in range(0,ncol_distM):
-        distMatrix[row][col] = dist_sheet.cell(row,col).value
-# Store the list of locations in array "LOCATIONS"
-for i in range(1,ncol_distM-1):
-    LOCATIONS[i-1] = str(distMatrix[0][i])
-#print(LOCATIONS)
-# Create the distance matrix without the title
-for row in range(1,nrow_distM):
-    for col in range(1,ncol_distM):
-        DISTMAT[row-1][col-1] = float(distMatrix[row][col])
-#print distMatrix
-#print DISTMAT
-################## End ##########################################
-################## Construct cost distance based on new policy ####
-cost_sheet = book.sheet_by_index(1)
-nrow_costM = cost_sheet.nrows
-ncol_costM = cost_sheet.ncols
-costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
-COSTMAT = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
-DISTANCE_RANGES = [0 for i in range(0,ncol_costM-2)]
-TRUCK_SIZES = [0 for i in range(nrow_costM-1)]
-FIXED_COSTS = [0 for i in range(nrow_costM-1)]
-# Store the original data
-for row in range(0,nrow_costM):
-    cost_sheet.row_values(row)
-    for col in range(0,ncol_costM):
-        costMatrix[row][col] = cost_sheet.cell(row,col).value
-# print costMatrix
-# Store the list of truck sizes
-for row in range(1,nrow_costM):
-    TRUCK_SIZES[row-1] = costMatrix[row][0]
-#print TRUCK_SIZES
-# Store the list of min cost per truck size
-for row in range(1,nrow_costM):
-    FIXED_COSTS[row-1] = costMatrix[row][ncol_costM-1]
-#print FIXED_COSTS
-# Store the DISTANCE_RANGES
-for col in range(1,ncol_costM-1):
-    DISTANCE_RANGES[col-1] = costMatrix[0][col]
-#print DISTANCE_RANGES
-# Store the cost matrix without title
-for row in range(1,nrow_costM):
+        - w: warehouse name
+        - c: cost matrix
+        - districtList: includes (district name, distance matrix, demand matrix)
+        """
+    results = []
+    for (district_name, distance_matrix, demand_matrix) in districtList:
+        DISTRICT = district_name
+        (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
+        DEMANDMAT = readDemandMatrix(demand_matrix)
+        (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
+        result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
+        results.append(result)
+    return results
+
+def readDistMatrix(distanceFile):
+    """
+        - open and read an Excel file for distance matrix
+        - @param distanceFile: Distance matrix file location
+        - @return new_distMatrix: Distance matrix without the all title of row and col
+        
+        """
+    book = xlrd.open_workbook(distanceFile)
+    #dist_sheet = book.sheet_by_index(0)
+    dist_sheet = book.sheet_by_name('Distance_Matrix')
+    nrow_distM = dist_sheet.nrows
+    ncol_distM = dist_sheet.ncols
+    distMatrix = [[0 for col in range(0,ncol_distM)] for row in range(0,nrow_distM)]
+    new_distMatrix = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
+    LOCATIONS = [0 for i in range(0,ncol_distM-2)]
+    # Store the original data
+    for row in range(0,nrow_distM):
+        dist_sheet.row_values(row)
+        for col in range(0,ncol_distM):
+            distMatrix[row][col] = dist_sheet.cell(row,col).value
+    # Store the list of locations in array "LOCATIONS"
+    for i in range(1,ncol_distM-1):
+        LOCATIONS[i-1] = str(distMatrix[0][i])
+    #print(LOCATIONS)
+    # Create the distance matrix without the title
+    for row in range(1,nrow_distM):
+        for col in range(1,ncol_distM):
+            new_distMatrix[row-1][col-1] = float(distMatrix[row][col])
+    #print distMatrix
+    #print (new_distMatrix)
+    return(LOCATIONS, new_distMatrix)
+
+def readCostMatrix(costFile):
+    """
+        - open and read a Cost Matrix from given path
+        """
+    book = xlrd.open_workbook(costFile)
+    #cost_sheet = book.sheet_by_index(1)
+    cost_sheet = book.sheet_by_name('Cost_Matrix')
+    nrow_costM = cost_sheet.nrows
+    ncol_costM = cost_sheet.ncols
+    costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
+    new_costMatrix = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
+    DISTANCE_RANGES = [0 for i in range(0,ncol_costM-2)]
+    TRUCK_SIZES = [0 for i in range(nrow_costM-1)]
+    FIXED_COSTS = [0 for i in range(nrow_costM-1)]
+    # Store the original data
+    for row in range(0,nrow_costM):
+        cost_sheet.row_values(row)
+        for col in range(0,ncol_costM):
+            costMatrix[row][col] = cost_sheet.cell(row,col).value
+    # print costMatrix
+    # Store the list of truck sizes
+    for row in range(1,nrow_costM):
+        TRUCK_SIZES[row-1] = costMatrix[row][0]
+    #print TRUCK_SIZES
+    # Store the list of min cost per truck size
+    for row in range(1,nrow_costM):
+        FIXED_COSTS[row-1] = costMatrix[row][ncol_costM-1]
+    #print FIXED_COSTS
+    # Store the DISTANCE_RANGES
     for col in range(1,ncol_costM-1):
-        COSTMAT[row-1][col-1] = float(costMatrix[row][col])
-#print COSTMAT
-################## End ##########################################
-################## Construct demand matrix ######################
-demand_sheet = book.sheet_by_index(2)
-nrow_demandM = demand_sheet.nrows
-ncol_demandM = demand_sheet.ncols
-demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
-for row in range(0,nrow_demandM):
-    demand_sheet.row_values(row)
-    for col in range(0,ncol_demandM):
-        demandMatrix[row][col] = demand_sheet.cell(row,col).value
-#print demandMatrix
-DEMANDMAT = [0 for row in range(0,nrow_demandM-1)]
-for row in range(1,nrow_demandM):
-    DEMANDMAT[row-1] = demandMatrix[row][1]
-#print DEMANDMAT
-################## End ##########################################
-################## Create decision Variable #####################
-cost_sheet = book.sheet_by_index(1)
-nrow_costM = cost_sheet.nrows
-ncol_costM = cost_sheet.ncols
-costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
-COSTMAT = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
-DISTANCE_RANGES = [0 for i in range(0,ncol_costM-2)]
-TRUCK_SIZES = [0 for i in range(nrow_costM-1)]
-FIXED_COSTS = [0 for i in range(nrow_costM-1)]
-# Store the original data
-for row in range(0,nrow_costM):
-    cost_sheet.row_values(row)
-    for col in range(0,ncol_costM):
-        costMatrix[row][col] = cost_sheet.cell(row,col).value
-# print costMatrix
-# Store the list of truck sizes
-for row in range(1,nrow_costM):
-    TRUCK_SIZES[row-1] = costMatrix[row][0]
-#print TRUCK_SIZES
-# Store the list of min cost per truck size
-for row in range(1,nrow_costM):
-    FIXED_COSTS[row-1] = costMatrix[row][ncol_costM-1]
-#print FIXED_COSTS
-# Store the DISTANCE_RANGES
-for col in range(1,ncol_costM-1):
-    DISTANCE_RANGES[col-1] = costMatrix[0][col]
-#print DISTANCE_RANGES
-# Store the cost matrix without title
-for row in range(1,nrow_costM):
-    for col in range(1,ncol_costM-1):
-        COSTMAT[row-1][col-1] = float(costMatrix[row][col])
-#print COSTMAT
-demand_sheet = book.sheet_by_index(2)
-nrow_demandM = demand_sheet.nrows
-ncol_demandM = demand_sheet.ncols
+        DISTANCE_RANGES[col-1] = costMatrix[0][col]
+    #print DISTANCE_RANGES
+    # Store the cost matrix without title
+    for row in range(1,nrow_costM):
+        for col in range(1,ncol_costM-1):
+            new_costMatrix[row-1][col-1] = float(costMatrix[row][col])
+    #print new_costMatrix
+    #print(TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, new_costMatrix)
+    return(TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, new_costMatrix)
 
-demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
-for row in range(0,nrow_demandM):
-    demand_sheet.row_values(row)
-    for col in range(0,ncol_demandM):
-        demandMatrix[row][col] = demand_sheet.cell(row,col).value
-#print demandMatrix
-DEMANDMAT = [0 for row in range(0,nrow_demandM-1)]
-for row in range(1,nrow_demandM):
-    DEMANDMAT[row-1] = demandMatrix[row][1]
-#print DEMANDMAT
-################## End ##########################################
-################## Create decision Variable #####################
-
-DISTRICT="Test District"
-################## Creation of LP starts here ###################
-# Creates a list of locations including warehouse
-#LOCATIONS TRUCK_SIZES DISTANCE_RANGES DISTMAT FIXED_COSTS
-#COSTMAT
-#DEMANDMAT
-
+def readDemandMatrix(demandFile):
+    """
+        - open and read a Demand Matrix from given path
+        """
+    book = xlrd.open_workbook(demandFile)
+    #demand_sheet = book.sheet_by_index(2)
+    demand_sheet = book.sheet_by_name('Demand_Matrix')
+    nrow_demandM = demand_sheet.nrows
+    ncol_demandM = demand_sheet.ncols
+    demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
+    for row in range(0,nrow_demandM):
+        demand_sheet.row_values(row)
+        for col in range(0,ncol_demandM):
+            demandMatrix[row][col] = demand_sheet.cell(row,col).value
+    #print demandMatrix
+    new_demandMatrix = [0 for row in range(0,nrow_demandM-1)]
+    for row in range(1,nrow_demandM):
+        new_demandMatrix[row-1] = demandMatrix[row][1]
+    #print (new_demandMatrix)
+    return(new_demandMatrix)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
     location = [0 for i in LOCATIONS]
@@ -270,7 +250,7 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
             for m in range(0,len(truckSize)):
                 prob += truckSize[m] * lpSum(x[i][j][m][n] for n in range(0,len(upperDist))) >= demandMat[i][j]*lpSum(x[i][j][m][n] for n in range(0,len(upperDist))) , "Weight Constraint" +str(i) + " "+str(j) + " " +str(m)
 
-    print ("Done Adding")
+    #print ("Done Adding")
     # a .lp file needs to be created for processing
     prob.writeLP("OneAcre.lp")
     prob.solve()
@@ -361,5 +341,9 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
     wb.save('example.xls')
     '''
     return output
-output = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
-print (output)
+
+myoutput = solve(w,c,districtList)
+print(myoutput)
+
+
+
