@@ -13,7 +13,7 @@ dist_sheet = book.sheet_by_index(0)
 nrow_distM = dist_sheet.nrows
 ncol_distM = dist_sheet.ncols
 distMatrix = [[0 for col in range(0,ncol_distM)] for row in range(0,nrow_distM)]
-new_distMatrix = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
+DISTMAT = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
 LOCATIONS = [0 for i in range(0,ncol_distM-2)]
 # Store the original data
 for row in range(0,nrow_distM):
@@ -27,16 +27,16 @@ for i in range(1,ncol_distM-1):
 # Create the distance matrix without the title
 for row in range(1,nrow_distM):
     for col in range(1,ncol_distM):
-        new_distMatrix[row-1][col-1] = float(distMatrix[row][col])
+        DISTMAT[row-1][col-1] = float(distMatrix[row][col])
 #print distMatrix
-#print new_distMatrix
+#print DISTMAT
 ################## End ##########################################
 ################## Construct cost distance based on new policy ####
 cost_sheet = book.sheet_by_index(1)
 nrow_costM = cost_sheet.nrows
 ncol_costM = cost_sheet.ncols
 costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
-new_costMatrix = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
+COSTMAT = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
 DISTANCE_RANGES = [0 for i in range(0,ncol_costM-2)]
 TRUCK_SIZES = [0 for i in range(nrow_costM-1)]
 FIXED_COSTS = [0 for i in range(nrow_costM-1)]
@@ -61,8 +61,8 @@ for col in range(1,ncol_costM-1):
 # Store the cost matrix without title
 for row in range(1,nrow_costM):
     for col in range(1,ncol_costM-1):
-        new_costMatrix[row-1][col-1] = float(costMatrix[row][col])
-#print new_costMatrix
+        COSTMAT[row-1][col-1] = float(costMatrix[row][col])
+#print COSTMAT
 ################## End ##########################################
 ################## Construct demand matrix ######################
 demand_sheet = book.sheet_by_index(2)
@@ -74,17 +74,17 @@ for row in range(0,nrow_demandM):
     for col in range(0,ncol_demandM):
         demandMatrix[row][col] = demand_sheet.cell(row,col).value
 #print demandMatrix
-new_demandMatrix = [0 for row in range(0,nrow_demandM-1)]
+DEMANDMAT = [0 for row in range(0,nrow_demandM-1)]
 for row in range(1,nrow_demandM):
-    new_demandMatrix[row-1] = demandMatrix[row][1]
-#print new_demandMatrix
+    DEMANDMAT[row-1] = demandMatrix[row][1]
+#print DEMANDMAT
 ################## End ##########################################
 ################## Create decision Variable #####################
 cost_sheet = book.sheet_by_index(1)
 nrow_costM = cost_sheet.nrows
 ncol_costM = cost_sheet.ncols
 costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
-new_costMatrix = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
+COSTMAT = [[0 for col in range(0,ncol_costM-2)] for row in range(0,nrow_costM-1)]
 DISTANCE_RANGES = [0 for i in range(0,ncol_costM-2)]
 TRUCK_SIZES = [0 for i in range(nrow_costM-1)]
 FIXED_COSTS = [0 for i in range(nrow_costM-1)]
@@ -109,8 +109,8 @@ for col in range(1,ncol_costM-1):
 # Store the cost matrix without title
 for row in range(1,nrow_costM):
     for col in range(1,ncol_costM-1):
-        new_costMatrix[row-1][col-1] = float(costMatrix[row][col])
-#print new_costMatrix
+        COSTMAT[row-1][col-1] = float(costMatrix[row][col])
+#print COSTMAT
 demand_sheet = book.sheet_by_index(2)
 nrow_demandM = demand_sheet.nrows
 ncol_demandM = demand_sheet.ncols
@@ -121,22 +121,22 @@ for row in range(0,nrow_demandM):
     for col in range(0,ncol_demandM):
         demandMatrix[row][col] = demand_sheet.cell(row,col).value
 #print demandMatrix
-new_demandMatrix = [0 for row in range(0,nrow_demandM-1)]
+DEMANDMAT = [0 for row in range(0,nrow_demandM-1)]
 for row in range(1,nrow_demandM):
-    new_demandMatrix[row-1] = demandMatrix[row][1]
-#print new_demandMatrix
+    DEMANDMAT[row-1] = demandMatrix[row][1]
+#print DEMANDMAT
 ################## End ##########################################
 ################## Create decision Variable #####################
 
 DISTRICT="Test District"
 ################## Creation of LP starts here ###################
 # Creates a list of locations including warehouse
-#LOCATIONS TRUCK_SIZES DISTANCE_RANGES new_distMatrix FIXED_COSTS
-#new_costMatrix
-#new_demandMatrix
+#LOCATIONS TRUCK_SIZES DISTANCE_RANGES DISTMAT FIXED_COSTS
+#COSTMAT
+#DEMANDMAT
 
 
-def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, new_distMatrix, FIXED_COSTS, new_costMatrix,new_demandMatrix,DISTRICT):
+def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
     location = [0 for i in LOCATIONS]
     for i in range(0,len(LOCATIONS)):
         location[i]=LOCATIONS[i]
@@ -162,18 +162,18 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, new_distMatrix, FIXED_CO
     # Read some csv assign
     for m in range(0,len(truckSize)):
         for n in range(0,len(upperDist)):
-            costMatrix[m][n]=new_costMatrix[m][n]
+            costMatrix[m][n]=COSTMAT[m][n]
 
     # Create distance matrix
     distanceMatrix = [[0 for i in range(0,len(location)+1)] for j in range(0,len(location)+1)]
     for i in range(0,len(location)+1):
         for j in range(0,len(location)+1):
-            distanceMatrix[i][j]=new_distMatrix[i][j]
+            distanceMatrix[i][j]=DISTMAT[i][j]
     # print (distanceMatrix)
     # Create demand for each location refer to computer plant example
     demand = [0 for i in location]
     for i in range(0,len(location)):
-        demand[i]=new_demandMatrix[i]
+        demand[i]=DEMANDMAT[i]
 
     # Create routes distances
     routeDist = [[0 for i in range(0,len(location))] for j in range(0,len(location))]
@@ -361,6 +361,5 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, new_distMatrix, FIXED_CO
     wb.save('example.xls')
     '''
     return output
-output = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, new_distMatrix, FIXED_COSTS, new_costMatrix,new_demandMatrix,DISTRICT)
+output = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
 print (output)
-
