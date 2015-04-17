@@ -21,16 +21,13 @@ class OutputTab(guidefault.DefaultTab):
 
     def initGraph(self):
         """
-        Create an output screen containing one table, three line edit widgets and six buttons
-        The first line edit widget will display the name for the warehouse
-        The second line edit widget will display the total Optimal Cost
-        The third line edit widget will display the total Non-Distance Optimal Cost
-        The "show table" button allows the data to be displayed on the table
-        The "Show warehouse" button allows the name of the warehouse to be displayed on the first line edit widget
-        The "Calculate optimal cost" button calculates the total optimal cost and displays the value on the second line edit widget
-        The "Caulculate non-distance optimal cost" button calculates the total non-distance optimal cost and displays the value on the third edit widget
-        The "Export to excel sheet" button exports the data in the table to a new spreadsheet
-        The "quit" button allows the user to terminate the application
+            Create an output screen containing one table, three line edit widgets and six buttons
+            The first line edit widget will display the name for the warehouse
+            The second line edit widget will display the total Optimal Cost
+            The third line edit widget will display the total Non-Distance Optimal Cost
+            The fourth line edit widget will display the total optimal distance
+            the fifth line edit widget will display the total weight
+            The "Export to excel sheet" button exports the data in the table to a new spreadsheet
         """
         self.resize(800,500)
         self.move(300,200)
