@@ -20,8 +20,7 @@ def solve(window,w,c,districtList):
         (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
         DEMANDMAT = readDemandMatrix(demand_matrix)
         result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
-        results.append(result)
-        theList = results
+        results = results + result
     window.outputTab.showtable(results,w)
     #display(w, results)
     #return results
