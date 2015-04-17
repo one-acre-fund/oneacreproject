@@ -270,8 +270,14 @@ class InputTab(guidefault.DefaultTab):
             return
         self.enableWarehouseWidgets(True)
         (d, t, c) = guidata.getWarehouseInfo(warehouse)
-        self.destinations.setText(d)
-        self.trucks.setText(t)
+        if not d:
+            self.destinations.setText("2")
+        else:
+            self.destinations.setText(d)
+        if not t:
+            self.trucks.setText("1000")
+        else:
+            self.trucks.setText(t)
         if c != guidata.FILENONE:
             self.costLabel.setText("Saved in data directory.")
             self.costFile = c
