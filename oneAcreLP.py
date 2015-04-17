@@ -3,9 +3,9 @@ from pulp import *
 import xlrd
 import math
 
-w = "Warehouse1"
-c= "CostMatrix.xlsx"
-districtList = [("district1", "DistanceMatrix.xlsx", "DemandMatrix.xlsx"), ("district2", "DistanceMatrix.xlsx", "DemandMatrix.xlsx")]
+#w = "Warehouse1"
+#c= "CostMatrix.xlsx"
+#districtList = [("district1", "DistanceMatrix.xlsx", "DemandMatrix.xlsx"), ("district2", "DistanceMatrix.xlsx", "DemandMatrix.xlsx")]
 
 def solve(w,c,districtList):
     """
@@ -306,8 +306,8 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     return output
 
-myoutput = solve(w,c,districtList)
-print(myoutput)
+#myoutput = solve(w,c,districtList)
+#print(myoutput)
 
 
 
