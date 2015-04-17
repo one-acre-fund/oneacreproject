@@ -517,9 +517,11 @@ class InputTab(guidefault.DefaultTab):
         # TODO: Temporary test code
         if not success:
             QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
-        self.parent.setCurrentIndex(self.parent.OUTPUTTABINDEX)
-        #results = oneAcreLP.solve(warehouseName, c, goodDistricts)
-        #QMessageBox.information(self, "Results", results)
+        error = oneAcreLP.solve(self.parent, warehouseName, c, goodDistricts)
+        if not error:
+            self.parent.setCurrentIndex(self.parent.OUTPUTTABINDEX)
+        else:
+            QMessageBox.critical(self, "Error", error)
     
     def changeUploadedFile(self, fileType):
         """
