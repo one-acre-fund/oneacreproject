@@ -9,19 +9,25 @@ from PyQt5.QtGui import QFont
 # The Main Window
 class MainWindow(QTabWidget):
     
+    # Tabs
+    INPUTTABINDEX = 0
+    OUTPUTTABINDEX = 1
+    outputTab = None
+    inputTab = None
+
     def __init__(self):
         """
         Constructor
         """
         super().__init__()
         
-        inputTab = guiinput.InputTab()
-        outputTab = guioutput.OutputTab()
+        self.outputTab = guioutput.OutputTab()
+        self.inputTab = guiinput.InputTab(self)
         
         self.resize(860, 645)
-        self.addTab(inputTab, "Input")
-        self.addTab(outputTab, "Output")
-        self.setWindowTitle('<Application Name>')
+        self.addTab(self.inputTab, "Input")
+        self.addTab(self.outputTab, "Output")
+        self.setWindowTitle("One Acre Fund DSO")
         self.show()
 
 # Main 

@@ -7,7 +7,9 @@ from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInput
 
 # Input Tab
 class InputTab(guidefault.DefaultTab):
-    
+    # Parent
+    parent = None
+
     # File identifying constants
     DISTANCEFILE = "Distance Matrix"
     WEIGHTFILE = "Site Weights"
@@ -31,12 +33,13 @@ class InputTab(guidefault.DefaultTab):
     warehouseWidgets = []
     districtWidgets = []
 
-    def __init__(self):
+    def __init__(self, parent):
         """
         Constructor
         """
         super().__init__()
-    
+        self.parent = parent
+
         mainBox = QVBoxLayout()
         
         title = QLabel("Input")
@@ -514,8 +517,9 @@ class InputTab(guidefault.DefaultTab):
         # TODO: Temporary test code
         if not success:
             QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
-        results = oneAcreLP.solve(warehouseName, c, goodDistricts)
-        QMessageBox.information(self, "Results", results)
+        self.parent.setCurrentIndex(self.parent.OUTPUTTABINDEX)
+        #results = oneAcreLP.solve(warehouseName, c, goodDistricts)
+        #QMessageBox.information(self, "Results", results)
     
     def changeUploadedFile(self, fileType):
         """
