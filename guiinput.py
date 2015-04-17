@@ -1,4 +1,5 @@
 import guidefault, guidata
+import oneAcreLP
 import os, sys, subprocess
 from PyQt5.QtCore import Qt, QSize, QMargins
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
@@ -502,10 +503,13 @@ class InputTab(guidefault.DefaultTab):
                     QMessageBox.Yes|QMessageBox.No, QMessageBox.No)
             if reply != QMessageBox.Yes:
                 return
-
-        # TODO: Integration
+        
+        # TODO: Note that Back End doesn't use d and t currently
+        # TODO: Temporary test code
         if not success:
             QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
+        results = oneAcreLP.solve(warehouseName, c, goodDistricts)
+        QMessageBox.information(self, "Results", results)
     
     def changeUploadedFile(self, fileType):
         """
