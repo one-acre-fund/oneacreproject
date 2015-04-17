@@ -279,7 +279,7 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 	# Create the output array 
 	
     if (LpStatus[prob.status]=="Optimal"):
-   	    output=[[0 for col in range(0,numCol)]for row in range(0,numRow)]
+        output=[[0 for col in range(0,numCol)]for row in range(0,numRow)]
         for row in range(0,numRow):
             output[row][0] = DISTRICT
             if (list[row][0]==list[row][1]):
