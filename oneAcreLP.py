@@ -16,14 +16,6 @@ def solve(window,w,c,districtList):
     results = []
     for (district_name, distance_matrix, demand_matrix) in districtList:
         DISTRICT = district_name
-        try:
-            (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
-        except:
-            return ("inconsisten length of rows and columns in CostMatrix")
-        try:
-            DEMANDMAT = readDemandMatrix(demand_matrix)
-        except:
-            return ("Please check your demand matrix. It requires 2 columns")
         (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
         result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
         results.append(result)
@@ -63,7 +55,7 @@ def readDistMatrix(distanceFile):
             new_distMatrix[row-1][col-1] = float(distMatrix[row][col])
     #print distMatrix
     #print (new_distMatrix)
-    return(LOCATIONS, new_distMatrix, nrow_distM, ncol_distM)
+    return(LOCATIONS, new_distMatrix)
 
 def readCostMatrix(costFile):
     """
