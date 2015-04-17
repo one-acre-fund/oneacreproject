@@ -7,29 +7,39 @@ import math
 #c= "CostMatrix.xlsx"
 #districtList = [("district1", "DistanceMatrix.xlsx", "DemandMatrix.xlsx"), ("district2", "DistanceMatrix.xlsx", "DemandMatrix.xlsx")]
 
-def solve(w,c,districtList):
+def solve(window,w,c,districtList):
     """
         - w: warehouse name
         - c: cost matrix
         - districtList: includes (district name, distance matrix, demand matrix)
-        """
+    """
     results = []
     for (district_name, distance_matrix, demand_matrix) in districtList:
         DISTRICT = district_name
-        (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
-        DEMANDMAT = readDemandMatrix(demand_matrix)
+        try:
+            (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
+        except:
+            return ("inconsisten length of rows and columns in CostMatrix")
+        try:
+            DEMANDMAT = readDemandMatrix(demand_matrix)
+        except:
+            return ("Please check your demand matrix. It requires 2 columns")
         (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
         result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
         results.append(result)
-    return results
+        theList = results
+    window.outputTab.showtable(results,w)
+    #display(w, results)
+    #return results
+## success return None
+## fail return error message
 
 def readDistMatrix(distanceFile):
     """
         - open and read an Excel file for distance matrix
         - @param distanceFile: Distance matrix file location
         - @return new_distMatrix: Distance matrix without the all title of row and col
-        
-        """
+    """
     book = xlrd.open_workbook(distanceFile)
     dist_sheet = book.sheet_by_index(0)
     #dist_sheet = book.sheet_by_name('Distance_Matrix')
@@ -53,12 +63,12 @@ def readDistMatrix(distanceFile):
             new_distMatrix[row-1][col-1] = float(distMatrix[row][col])
     #print distMatrix
     #print (new_distMatrix)
-    return(LOCATIONS, new_distMatrix)
+    return(LOCATIONS, new_distMatrix, nrow_distM, ncol_distM)
 
 def readCostMatrix(costFile):
     """
         - open and read a Cost Matrix from given path
-        """
+    """
     book = xlrd.open_workbook(costFile)
     cost_sheet = book.sheet_by_index(0)
     #cost_sheet = book.sheet_by_name('Cost_Matrix')
@@ -98,7 +108,7 @@ def readCostMatrix(costFile):
 def readDemandMatrix(demandFile):
     """
         - open and read a Demand Matrix from given path
-        """
+    """
     book = xlrd.open_workbook(demandFile)
     demand_sheet = book.sheet_by_index(0)
     #demand_sheet = book.sheet_by_name('Demand_Matrix')
