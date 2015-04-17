@@ -115,56 +115,50 @@ class OutputTab(guidefault.DefaultTab):
         """
         self.theList=theList
         self.warehouseName=theName
-        rowAdjust = 0
 
-        for k in range(len(self.theList)):
-            self.theList=self.theList[k]
+        # Displays the data on the table
+        for i in range(len(self.theList)):
+            for j in range(len(self.theList[i])):
+                self.table.setItem(i,j,QTableWidgetItem(str(self.theList[i][j])[:11]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,3,QTableWidgetItem(str(self.theList[i][3])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,4,QTableWidgetItem(str(self.theList[i][4])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,5,QTableWidgetItem(str(self.theList[i][5])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,6,QTableWidgetItem(str(self.theList[i][6])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,7,QTableWidgetItem(str(self.theList[i][7])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,8,QTableWidgetItem(str(self.theList[i][8])[:7]))
+                        
+        # Calculates the sum of the optimal distance and displays the value in the fourth line edit widget
+        totalDistance=0
+        for i in range(len(self.theList)):
+            totalDistance=totalDistance+self.theList[i][4]
+        self.lineFour.setText(str(totalDistance)[:7])
+
+        # Calculates the sum of the total weight and displays the value in the fifth line edit widget
+        totalWeight=0
+        for i in range(len(self.theList)):
+            totalWeight=totalWeight+self.theList[i][5]
+        self.lineFive.setText(str(totalWeight)[:7])
             
-            
-            # Displays the data on the table
-            for i in range(len(self.theList)):
-                for j in range(len(self.theList[i])):
-                    self.table.setItem(i,j,QTableWidgetItem(str(self.theList[i][j])[:11]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,3,QTableWidgetItem(str(self.theList[i][3])[:7]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,4,QTableWidgetItem(str(self.theList[i][4])[:7]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,5,QTableWidgetItem(str(self.theList[i][5])[:7]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,6,QTableWidgetItem(str(self.theList[i][6])[:7]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,7,QTableWidgetItem(str(self.theList[i][7])[:7]))
-            for i in range(len(self.theList)):
-                self.table.setItem(i,8,QTableWidgetItem(str(self.theList[i][8])[:7]))
-        
+        # Calculates the sum of the optimal cost and displays the value in the second line edit widget
+        totalCost=0
+        for i in range(len(self.theList)):
+            totalCost=totalCost+self.theList[i][7]
+        self.lineTwo.setText(str(totalCost)[:7])
 
-            # Calculates the sum of the optimal distance and displays the value in the fourth line edit widget
-            totalDistance=0
-            for i in range(len(self.theList)):
-                totalDistance=totalDistance+self.theList[i][4]
-            self.lineFour.setText(str(totalDistance)[:7])
+        # Calculates the sum of non-distance optimal cost and displays the value in the third line edit widget
+        totalCostOne=0
+        for i in range(len(self.theList)):
+            totalCostOne=totalCostOne+theList[i][8]
+        self.lineThree.setText(str(totalCostOne)[:7])
 
-            # Calculates the sum of the total weight and displays the value in the fifth line edit widget
-            totalWeight=0
-            for i in range(len(self.theList)):
-                totalWeight=totalWeight+self.theList[i][5]
-            self.lineFive.setText(str(totalWeight)[:7])
-
-            # Calculates the sum of the optimal cost and displays the value in the second line edit widget
-            totalCost=0
-            for i in range(len(self.theList)):
-                totalCost=totalCost+self.theList[i][7]
-            self.lineTwo.setText(str(totalCost)[:7])
-
-            # Calculates the sum of non-distance optimal cost and displays the value in the third line edit widget
-            totalCostOne=0
-            for i in range(len(self.theList)):
-                totalCostOne=totalCostOne+theList[i][8]
-            self.lineThree.setText(str(totalCostOne)[:7])
-
-            # Displays the name of the warehouse in the first line edit widget
-            self.line.setText(self.warehouseName)
+        # Displays the name of the warehouse in the first line edit widget
+        self.line.setText(self.warehouseName)
 
     def createExcelSheet(self,theList):
         """
@@ -201,41 +195,37 @@ class OutputTab(guidefault.DefaultTab):
         worksheet.col(7).width=256*20
         worksheet.col(8).width=256*25
 
+        # Displays the data in the table in the spreadsheet
+        for i in range(len(self.theList)):
+            for j in range(len(self.theList[i])):
+                worksheet.write(i+2,j,theList[i][j])
 
-        for k in range(len(self.theList)):
-            self.theList=self.theList[k]
+        # Calculates the total optimal cost and displays it
+        totalOptimalCost=0
+        for i in range(len(self.theList)):
+            totalOptimalCost=totalOptimalCost+self.theList[i][7]
+        worksheet.write(0,1,totalOptimalCost)
+
+        # Calcualtes the total non-distance optimal cost and displays it
+        totalNonDistanceOptimalCost=0
+        for i in range(len(self.theList)):
+            totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+theList[i][8]
+        worksheet.write(0,3,totalNonDistanceOptimalCost)
         
-            # Displays the data in the table in the spreadsheet
-            for i in range(len(self.theList)):
-                for j in range(len(self.theList[i])):
-                    worksheet.write(i+2,j,theList[i][j])
-
-            # Calculates the total optimal cost and displays it
-            totalOptimalCost=0
-            for i in range(len(self.theList)):
-                totalOptimalCost=totalOptimalCost+self.theList[i][7]
-            worksheet.write(0,1,totalOptimalCost)
-
-            # Calcualtes the total non-distance optimal cost and displays it
-            totalNonDistanceOptimalCost=0
-            for i in range(len(self.theList)):
-                totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+theList[i][8]
-            worksheet.write(0,3,totalNonDistanceOptimalCost)
+        # Calculates the total optimal distance and displays it
+        totalOptimalDistance=0
+        for i in range(len(self.theList)):
+            totalOptimalDistance=totalOptimalDistance+theList[i][4]
+        worksheet.write(0,5,totalOptimalDistance)
         
-            # Calculates the total optimal distance and displays it
-            totalOptimalDistance=0
-            for i in range(len(self.theList)):
-                totalOptimalDistance=totalOptimalDistance+theList[i][4]
-            worksheet.write(0,5,totalOptimalDistance)
-        
-            # Calculates the total truck weight and displays it
-            totalTruckWeight=0
-            for i in range(len(self.theList)):
-                totalTruckWeight=totalTruckWeight+self.theList[i][5]
-            worksheet.write(0,7,totalTruckWeight)
+        # Calculates the total truck weight and displays it
+        totalTruckWeight=0
+        for i in range(len(self.theList)):
+            totalTruckWeight=totalTruckWeight+self.theList[i][5]
+        worksheet.write(0,7,totalTruckWeight)
 
-            # Saves the new Excel spreadsheet as "outputsheet.xls"
-            workbook.save('outputsheet.xls')
+        # Saves the new Excel spreadsheet as "outputsheet.xls"
+        workbook.save('outputsheet.xls')
 
 
 
