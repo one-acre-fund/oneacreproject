@@ -17,6 +17,8 @@ def solve(window,w,c,districtList):
     for (district_name, distance_matrix, demand_matrix) in districtList:
         DISTRICT = district_name
         (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
+        (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
+        DEMANDMAT = readDemandMatrix(demand_matrix)
         result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
         results.append(result)
         theList = results
