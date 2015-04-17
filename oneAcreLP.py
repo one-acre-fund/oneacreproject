@@ -117,6 +117,8 @@ def readDemandMatrix(demandFile):
     return(new_demandMatrix)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
+    
+    # Create list of locations
     location = [0 for i in LOCATIONS]
     for i in range(0,len(LOCATIONS)):
         location[i]=LOCATIONS[i]
@@ -227,9 +229,9 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     # A farm must be visited at one and only one truck
     for i in range(0,len(location)):
-        prob+= lpSum(x[i][j][m][n] for j in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation A" +str(i)
+        prob+= lpSum(x[i][j][m][n] for j in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation Row" +str(i)
     for j in range(0,len(location)):
-        prob+= lpSum(x[i][j][m][n] for i in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation B" +str(j)
+        prob+= lpSum(x[i][j][m][n] for i in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation Col" +str(j)
 
     # X must be symmetrical
     for i in range(0,len(location)):
@@ -254,16 +256,9 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
     # a .lp file needs to be created for processing
     prob.writeLP("OneAcre.lp")
     prob.solve()
-    # to check whether solution is unbounded etc we check value of prob.status
-    # We have an array/dictionary to convert into text
-    # values of our decision variables can be printed as:
-    '''
-    for item in prob.variables():
-        if(item.varValue == 1):
-            print item.name, "=" , item.varValue
-    # print optimal value, value() helps in formating
-    print "Status:", LpStatus[prob.status]
-    '''
+    
+    # Extract decision variables that are 1
+
     list = []
 
     for i in range(0,len(location)):
@@ -280,67 +275,36 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     numRow = len(list)
     numCol = 9
-    output=[[0 for col in range(0,numCol)]for row in range(0,numRow+1)]
-
-    output[0][0]=LpStatus[prob.status]
-
-    if (output[0][0]=="Optimal"):
+	
+	# Create the output array 
+	
+    if (LpStatus[prob.status]=="Optimal"):
+    	output=[[0 for col in range(0,numCol)]for row in range(0,numRow+1)]
         for row in range(0,numRow):
-            output[row+1][0] = DISTRICT
+            output[row][0] = DISTRICT
             if (list[row][0]==list[row][1]):
-                output[row+1][1]= location[list[row][0]]
-                output[row+1][2]= "-"
+                output[row][1]= location[list[row][0]]
+                output[row][2]= "-"
             else:
-                output[row+1][1]= location[list[row][0]]
-                output[row+1][2]= location[list[row][1]]
+                output[row][1]= location[list[row][0]]
+                output[row][2]= location[list[row][1]]
 
-            output[row+1][3]= routeDist[list[row][0]][list[row][1]]
-            output[row+1][4]= distBrackets[list[row][0]][list[row][1]][list[row][3]]
-            output[row+1][5]= demandMat[list[row][0]][list[row][1]]
-            output[row+1][6]= truckSize[list[row][2]]
-            output[row+1][7]= math.floor(c[list[row][0]][list[row][1]][list[row][2]][list[row][3]])
+            output[row][3]= routeDist[list[row][0]][list[row][1]]
+            output[row][4]= distBrackets[list[row][0]][list[row][1]][list[row][3]]
+            output[row][5]= demandMat[list[row][0]][list[row][1]]
+            output[row][6]= truckSize[list[row][2]]
+            output[row][7]= math.floor(c[list[row][0]][list[row][1]][list[row][2]][list[row][3]])
 
-            if (output[row+1][3]<output[row+1][4]):
-                output[row+1][8]= c[list[row][0]][list[row][1]][list[row][2]][list[row][3]-1]
+            if (output[row][3]<output[row][4]):
+                output[row][8]= c[list[row][0]][list[row][1]][list[row][2]][list[row][3]-1]
             else:
-                output[row+1][8] = output[row+1][7]
-    ''''
-    for row in range(0,numRow):
-        print output[row]
+                output[row][8] = output[row][7]
+    else:
+    	output[[0 for col in range(0,numcol)]]
+    	output[0][0] = District
+    	output[0][1] = "Infeasible"
 
-    wb = xlwt.Workbook()
-    ws = wb.add_sheet('Output')
-    # Populate headers
-    ws.write(0,1,"Site 1")
-    ws.write(0,2,"Site 2")
-    ws.write(0,3,"Distance Calculated")
-    ws.write(0,4,"Optimal Distance")
-    ws.write(0,5,"Weight Carried")
-    ws.write(0,6,"Truck Size")
-    ws.write(0,7,"Estimated Cost")
-    ws.write(0,8,"Cost")
-    # Populate the rest
-
-    for row in range(0,len(list)):
-        ws.write(row+1,0,"Truck "+str(row+1))
-
-        if (list[row][0]==list[row][1]):
-            ws.write(row+1,1,location[list[row][0]])
-            ws.write(row+1,2,"-")
-        else:
-            ws.write(row+1,1,location[list[row][0]])
-            ws.write(row+1,2,location[list[row][1]])
-
-        ws.write(row+1,3,routeDist[list[row][0]][list[row][1]])
-        ws.write(row+1,4,distBrackets[list[row][0]][list[row][1]][list[row][3]])
-        ws.write(row+1,5,demandMat[list[row][0]][list[row][1]])
-        ws.write(row+1,6,truckSize[list[row][2]])
-        ws.write(row+1,7,c[list[row][0]][list[row][1]][list[row][2]][list[row][3]])
-        ws.write(row+1,8,costMatrix[list[row][2]][list[row][3]])
-
-    wb.save('example.xls')
-    '''
-    return output
+	return output
 
 myoutput = solve(w,c,districtList)
 print(myoutput)
