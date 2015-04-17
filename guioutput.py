@@ -10,13 +10,11 @@ from PyQt5.QtCore import *
 # Output Tab
 class OutputTab(guidefault.DefaultTab):
 
-    def __init__(self,theList,theName):
+    def __init__(self):
         """
             Constructor
             """
         super().__init__()
-        self.theList = theList
-        self.warehouseName=theName
         self.initGraph()
 
     def initGraph(self):
@@ -41,7 +39,7 @@ class OutputTab(guidefault.DefaultTab):
         self.lineThree=QLineEdit(self)
         self.labelFour=QLabel('Total Optimal Distance',self)
         self.lineFour=QLineEdit(self)
-        self.labelFive=QLabel('Total weight',self)
+        self.labelFive=QLabel('Total Weight',self)
         self.lineFive=QLineEdit(self)
 
         hBox=QHBoxLayout()
@@ -105,7 +103,7 @@ class OutputTab(guidefault.DefaultTab):
         self.setLayout(vBox)
         self.show()
 
-    def showtable(self):
+    def showtable(self,theList,theName):
         """
             Displays the data on the table
             Displays the name of the warehouse
@@ -114,6 +112,9 @@ class OutputTab(guidefault.DefaultTab):
             Calcualtes the sum of the optimal cost and displays it
             Calcualtes the sum of the non-distance cost and displays it
         """
+        self.theList=theList
+        Self.warehoUSEname=theName
+        
         # Displays the data on the table
         for i in range(len(self.theList)):
             for j in range(len(self.theList[i])):
@@ -146,17 +147,21 @@ class OutputTab(guidefault.DefaultTab):
         # Displays the name of the warehouse in the first line edit widget
         self.line.setText(self.warehouseName)
 
-    def createExcelSheet(self):
+    def createExcelSheet(self,theList):
         """
             Exports the data in the table to a new Excel spreasheet
             The new Excel spreasheet is saved as "outputsheet.xls"
         """
+        self.theList=theList
+        
         workbook=xlwt.Workbook()
         worksheet=workbook.add_sheet('output')
 
         bold=xlwt.easyxf('font:bold 1')
         worksheet.write(0,0,'Total Optimal Cost',bold)
         worksheet.write(0,2,'Total Non-Distance Optimal Cost',bold)
+        worksheet.write(0,4,'Total Optimal Distance',bold)
+        worksheet.write(0,6,'Total Weight',bold)
         worksheet.write(1,0,'District',bold)
         worksheet.write(1,1,'Site 1',bold)
         worksheet.write(1,2,'Site 2',bold)
@@ -168,13 +173,13 @@ class OutputTab(guidefault.DefaultTab):
         worksheet.write(1,8,'Non-Distance Optimal Cost',bold)
 
         worksheet.col(0).width=256*20
-        worksheet.col(1).width=256*10
+        worksheet.col(1).width=256*20
         worksheet.col(2).width=256*30
-        worksheet.col(3).width=256*15
-        worksheet.col(4).width=256*15
-        worksheet.col(5).width=256*10
-        worksheet.col(6).width=256*10
-        worksheet.col(7).width=256*15
+        worksheet.col(3).width=256*20
+        worksheet.col(4).width=256*20
+        worksheet.col(5).width=256*20
+        worksheet.col(6).width=256*20
+        worksheet.col(7).width=256*20
         worksheet.col(8).width=256*25
 
         # Displays the data in the table in the spreadsheet
@@ -193,6 +198,18 @@ class OutputTab(guidefault.DefaultTab):
         for i in range(len(self.theList)):
             totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+theList[i][8]
         worksheet.write(0,3,totalNonDistanceOptimalCost)
+        
+        # Calculates the total optimal distance and displays it
+        totalOptimalDistance=0
+        for i in range(len(self.theList)):
+            totalOptimalDistance=totalOptimalDistance+theList[i][4]
+        worksheet.write(0,5,totalOptimalDistance)
+        
+        # Calculates the total truck weight and displays it
+        totalTruckWeight=0
+        for i in range(len(self.theList)):
+            totalTruckWeight=totalTruckWeight+self.theList[i][5]
+        worksheet.write(0,7,totalTruckWeight)
 
         # Saves the new Excel spreadsheet as "outputsheet.xls"
         workbook.save('outputsheet.xls')
