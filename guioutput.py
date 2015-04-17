@@ -113,12 +113,26 @@ class OutputTab(guidefault.DefaultTab):
             Calcualtes the sum of the non-distance cost and displays it
         """
         self.theList=theList
-        Self.warehoUSEname=theName
+        self.warehouseName=theName
         
         # Displays the data on the table
         for i in range(len(self.theList)):
             for j in range(len(self.theList[i])):
                 self.table.setItem(i,j,QTableWidgetItem(str(self.theList[i][j])[:11]))
+    
+        for i in range(len(self.theList)):
+            self.table.setItem(i,3,QTableWidgetItem(str(self.theList[i][3])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,4,QTableWidgetItem(str(self.theList[i][4])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,5,QTableWidgetItem(str(self.theList[i][5])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,6,QTableWidgetItem(str(self.theList[i][6])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,7,QTableWidgetItem(str(self.theList[i][7])[:7]))
+        for i in range(len(self.theList)):
+            self.table.setItem(i,8,QTableWidgetItem(str(self.theList[i][8])[:7]))
+        
 
         # Calculates the sum of the optimal distance and displays the value in the fourth line edit widget
         totalDistance=0
