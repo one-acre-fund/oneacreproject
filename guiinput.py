@@ -510,6 +510,7 @@ class InputTab(guidefault.DefaultTab):
             QMessageBox.warning(self, "Warning", "Solver will still run. " + errorString)
         results = oneAcreLP.solve(warehouseName, c, goodDistricts)
         QMessageBox.information(self, "Results", results)
+
     
     def changeUploadedFile(self, fileType):
         """
