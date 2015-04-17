@@ -304,7 +304,7 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
             else:
                 output[row][8] = output[row][7]
     else:
-    	output[[0 for col in range(0,numcol)]]
+    	output=[[0 for col in range(0,numcol)]]
     	output[0][0] = District
     	output[0][1] = "Infeasible"
 
