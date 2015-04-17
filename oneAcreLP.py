@@ -4,8 +4,8 @@ import xlrd
 import math
 
 w = "Warehouse1"
-c= "OneAcreInputs.xlsx"
-districtList = [("district1", "OneAcreInputs.xlsx", "OneAcreInputs.xlsx"), ("district2", "OneAcreInputs.xlsx", "OneAcreInputs.xlsx")]
+c= "CostMatrix.xlsx"
+districtList = [("district1", "DistanceMatrix.xlsx", "DemandMatrix.xlsx"), ("district2", "DistanceMatrix.xlsx", "DemandMatrix.xlsx")]
 
 def solve(w,c,districtList):
     """
@@ -31,8 +31,8 @@ def readDistMatrix(distanceFile):
         
         """
     book = xlrd.open_workbook(distanceFile)
-    #dist_sheet = book.sheet_by_index(0)
-    dist_sheet = book.sheet_by_name('Distance_Matrix')
+    dist_sheet = book.sheet_by_index(0)
+    #dist_sheet = book.sheet_by_name('Distance_Matrix')
     nrow_distM = dist_sheet.nrows
     ncol_distM = dist_sheet.ncols
     distMatrix = [[0 for col in range(0,ncol_distM)] for row in range(0,nrow_distM)]
@@ -60,8 +60,8 @@ def readCostMatrix(costFile):
         - open and read a Cost Matrix from given path
         """
     book = xlrd.open_workbook(costFile)
-    #cost_sheet = book.sheet_by_index(1)
-    cost_sheet = book.sheet_by_name('Cost_Matrix')
+    cost_sheet = book.sheet_by_index(0)
+    #cost_sheet = book.sheet_by_name('Cost_Matrix')
     nrow_costM = cost_sheet.nrows
     ncol_costM = cost_sheet.ncols
     costMatrix = [[0 for col in range(0,ncol_costM)] for row in range(0,nrow_costM)]
@@ -100,8 +100,8 @@ def readDemandMatrix(demandFile):
         - open and read a Demand Matrix from given path
         """
     book = xlrd.open_workbook(demandFile)
-    #demand_sheet = book.sheet_by_index(2)
-    demand_sheet = book.sheet_by_name('Demand_Matrix')
+    demand_sheet = book.sheet_by_index(0)
+    #demand_sheet = book.sheet_by_name('Demand_Matrix')
     nrow_demandM = demand_sheet.nrows
     ncol_demandM = demand_sheet.ncols
     demandMatrix = [[0 for col in range(0,ncol_demandM)] for row in range(0,nrow_demandM)]
@@ -279,7 +279,7 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 	# Create the output array 
 	
     if (LpStatus[prob.status]=="Optimal"):
-    	output=[[0 for col in range(0,numCol)]for row in range(0,numRow+1)]
+    	output=[[0 for col in range(0,numCol)]for row in range(0,numRow)]
         for row in range(0,numRow):
             output[row][0] = DISTRICT
             if (list[row][0]==list[row][1]):
