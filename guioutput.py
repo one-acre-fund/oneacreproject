@@ -3,7 +3,7 @@ import sys
 import xlwt
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QTableWidget,QPushButton,QHBoxLayout,QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QLineEdit, QTableWidgetItem
+from PyQt5.QtWidgets import QLabel, QLineEdit, QTableWidgetItem,QFileDialog
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 
@@ -16,8 +16,9 @@ class OutputTab(guidefault.DefaultTab):
             """
         super().__init__()
         self.initGraph()
+        tList=[]
+        tName=''
     
-
     def initGraph(self):
         """
             Create an output screen containing one table, three line edit widgets and six buttons
@@ -160,13 +161,18 @@ class OutputTab(guidefault.DefaultTab):
         # Displays the name of the warehouse in the first line edit widget
         self.line.setText(self.warehouseName)
 
-    def createExcelSheet(self,theList):
+        global tName
+        tName=self.warehouseName
+        global tList
+        tList=theList
+        return tList
+
+    def createExcelSheet(self):
         """
             Exports the data in the table to a new Excel spreasheet
             The new Excel spreasheet is saved as "outputsheet.xls"
         """
-        self.theList=theList
-        
+        self.theList=self.showtable(tList,tName)
         workbook=xlwt.Workbook()
         worksheet=workbook.add_sheet('output')
 
@@ -198,34 +204,35 @@ class OutputTab(guidefault.DefaultTab):
         # Displays the data in the table in the spreadsheet
         for i in range(len(self.theList)):
             for j in range(len(self.theList[i])):
-                worksheet.write(i+2,j,theList[i][j])
+                worksheet.write(i+2,j,str(self.theList[i][j])[:8])
 
         # Calculates the total optimal cost and displays it
         totalOptimalCost=0
         for i in range(len(self.theList)):
             totalOptimalCost=totalOptimalCost+self.theList[i][7]
-        worksheet.write(0,1,totalOptimalCost)
+        worksheet.write(0,1,str(totalOptimalCost)[:8])
 
         # Calcualtes the total non-distance optimal cost and displays it
         totalNonDistanceOptimalCost=0
         for i in range(len(self.theList)):
-            totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+theList[i][8]
-        worksheet.write(0,3,totalNonDistanceOptimalCost)
+            totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+self.theList[i][8]
+        worksheet.write(0,3,str(totalNonDistanceOptimalCost)[:8])
         
         # Calculates the total optimal distance and displays it
         totalOptimalDistance=0
         for i in range(len(self.theList)):
-            totalOptimalDistance=totalOptimalDistance+theList[i][4]
-        worksheet.write(0,5,totalOptimalDistance)
+            totalOptimalDistance=totalOptimalDistance+self.theList[i][4]
+        worksheet.write(0,5,str(totalOptimalDistance)[:8])
         
         # Calculates the total truck weight and displays it
         totalTruckWeight=0
         for i in range(len(self.theList)):
             totalTruckWeight=totalTruckWeight+self.theList[i][5]
-        worksheet.write(0,7,totalTruckWeight)
+        worksheet.write(0,7,str(totalTruckWeight)[:8])
 
-        # Saves the new Excel spreadsheet as "outputsheet.xls"
-        workbook.save('outputsheet.xls')
+        # Allows the user to select a name and a directory for the saved excel spreadsheet
+        fileName=QFileDialog.getSaveFileName(self,'Save Spreadsheet','/home','*.xls')
+        workbook.save(fileName[0])
 
 
 
