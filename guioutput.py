@@ -21,54 +21,56 @@ class OutputTab(guidefault.DefaultTab):
     
     def initGraph(self):
         """
-            Create an output screen containing one table, three line edit widgets and six buttons
-            The first line edit widget will display the name for the warehouse
-            The second line edit widget will display the total Optimal Cost
-            The third line edit widget will display the total Non-Distance Optimal Cost
-            The fourth line edit widget will display the total optimal distance
-            the fifth line edit widget will display the total weight
+            Create an output screen containing one table, one button and five labels.
+            Before the inputs are entered, the labels are empty strings.
+            After the inputs are entered, the labels will display the name of the warehouse and some numbers 
+            The first label will display the name of the warehosue
+            The second label will display the total optimal cost 
+            The third label will display the total non-distance optimal cost
+            The fourth label will display the total optimal distance
+            The fifth label will display the total weight
             The "Export to excel sheet" button exports the data in the table to a new spreadsheet
         """
         self.resize(800,500)
         self.move(300,200)
         self.setWindowTitle('<output tab>')
-
         self.labelOne=QLabel('Warehouse', self)
-        self.line=QLineEdit(self)
+        self.labelWarehouse=QLabel('',self)
         self.labelTwo=QLabel('Total Optimal Cost',self)
-        self.lineTwo=QLineEdit(self)
+        self.labelOptimalCost=QLabel('',self)
         self.labelThree=QLabel('Total Non-Distance Optimal Cost',self)
-        self.lineThree=QLineEdit(self)
+        self.labelNonDistanceOptimalCost=QLabel('',self)
         self.labelFour=QLabel('Total Optimal Distance',self)
-        self.lineFour=QLineEdit(self)
+        self.labelOptimalDistance=QLabel('',self)
         self.labelFive=QLabel('Total Weight',self)
-        self.lineFive=QLineEdit(self)
+        self.labelWeight=QLabel('',self)
 
         hBox=QHBoxLayout()
         hBox.addStretch()
         hBox.addWidget(self.labelOne)
         hBox.addStretch(1)
-        hBox.addWidget(self.line)
+        hBox.addWidget(self.labelWarehouse)
         hBoxTwo=QHBoxLayout()
         hBoxTwo.addStretch()
         hBoxTwo.addWidget(self.labelTwo)
         hBoxTwo.addStretch(1)
-        hBoxTwo.addWidget(self.lineTwo)
+        hBoxTwo.addWidget(self.labelOptimalCost)
         hBoxThree=QHBoxLayout()
         hBoxThree.addStretch()
         hBoxThree.addWidget(self.labelThree)
         hBoxThree.addStretch(1)
-        hBoxThree.addWidget(self.lineThree)
+        hBoxThree.addWidget(self.labelNonDistanceOptimalCost)
         hBoxFour=QHBoxLayout()
         hBoxFour.addStretch()
         hBoxFour.addWidget(self.labelFour)
         hBoxFour.addStretch(1)
-        hBoxFour.addWidget(self.lineFour)
+        hBoxFour.addWidget(self.labelOptimalDistance)
         hBoxFive=QHBoxLayout()
         hBoxFive.addStretch()
         hBoxFive.addWidget(self.labelFive)
         hBoxFive.addStretch(1)
-        hBoxFive.addWidget(self.lineFive)
+        hBoxFive.addWidget(self.labelWeight)
+
         vBox=QVBoxLayout()
         vBox.addStretch()
         vBox.addLayout(hBox)
@@ -79,15 +81,15 @@ class OutputTab(guidefault.DefaultTab):
 
         self.table=QTableWidget(1000,9,self)
         self.table.setHorizontalHeaderLabels(['district','site 1', 'site 2', 'actual distance','optimal distance','weight','truck size','optimal cost', 'Non-Distance optimal cost'])
-        self.table.setColumnWidth(0,100)
-        self.table.setColumnWidth(1,100)
-        self.table.setColumnWidth(2,100)
-        self.table.setColumnWidth(3,100)
-        self.table.setColumnWidth(4,100)
-        self.table.setColumnWidth(5,100)
-        self.table.setColumnWidth(6,100)
-        self.table.setColumnWidth(7,100)
-        self.table.setColumnWidth(8,150)
+        self.table.setColumnWidth(0,150)
+        self.table.setColumnWidth(1,150)
+        self.table.setColumnWidth(2,150)
+        self.table.setColumnWidth(3,150)
+        self.table.setColumnWidth(4,150)
+        self.table.setColumnWidth(5,150)
+        self.table.setColumnWidth(6,150)
+        self.table.setColumnWidth(7,150)
+        self.table.setColumnWidth(8,200)
 
         hBoxSix=QHBoxLayout()
         hBoxSix.addWidget(self.table)
@@ -138,28 +140,28 @@ class OutputTab(guidefault.DefaultTab):
         totalDistance=0
         for i in range(len(self.theList)):
             totalDistance=totalDistance+self.theList[i][4]
-        self.lineFour.setText(str(totalDistance)[:7])
+        self.labelOptimalDistance.setText(str(totalDistance)[:7])
 
         # Calculates the sum of the total weight and displays the value in the fifth line edit widget
         totalWeight=0
         for i in range(len(self.theList)):
             totalWeight=totalWeight+self.theList[i][5]
-        self.lineFive.setText(str(totalWeight)[:7])
+        self.labelWeight.setText(str(totalWeight)[:7])
             
         # Calculates the sum of the optimal cost and displays the value in the second line edit widget
         totalCost=0
         for i in range(len(self.theList)):
             totalCost=totalCost+self.theList[i][7]
-        self.lineTwo.setText(str(totalCost)[:7])
+        self.labelOptimalCost.setText(str(totalCost)[:7])
 
         # Calculates the sum of non-distance optimal cost and displays the value in the third line edit widget
         totalCostOne=0
         for i in range(len(self.theList)):
             totalCostOne=totalCostOne+theList[i][8]
-        self.lineThree.setText(str(totalCostOne)[:7])
+        self.labelNonDistanceOptimalCost.setText(str(totalCostOne)[:7])
 
         # Displays the name of the warehouse in the first line edit widget
-        self.line.setText(self.warehouseName)
+        self.labelWarehouse.setText(self.warehouseName)
 
         global tName
         tName=self.warehouseName
@@ -170,7 +172,7 @@ class OutputTab(guidefault.DefaultTab):
     def createExcelSheet(self):
         """
             Exports the data in the table to a new Excel spreasheet
-            The new Excel spreasheet is saved as "outputsheet.xls"
+            Allows the user to select a name and a directory for the saved excel spreadsheet 
         """
         self.theList=self.showtable(tList,tName)
         workbook=xlwt.Workbook()
@@ -204,31 +206,31 @@ class OutputTab(guidefault.DefaultTab):
         # Displays the data in the table in the spreadsheet
         for i in range(len(self.theList)):
             for j in range(len(self.theList[i])):
-                worksheet.write(i+2,j,str(self.theList[i][j])[:8])
+                worksheet.write(i+2,j,str(self.theList[i][j])[:11])
 
         # Calculates the total optimal cost and displays it
         totalOptimalCost=0
         for i in range(len(self.theList)):
             totalOptimalCost=totalOptimalCost+self.theList[i][7]
-        worksheet.write(0,1,str(totalOptimalCost)[:8])
+        worksheet.write(0,1,str(totalOptimalCost)[:11])
 
         # Calcualtes the total non-distance optimal cost and displays it
         totalNonDistanceOptimalCost=0
         for i in range(len(self.theList)):
             totalNonDistanceOptimalCost=totalNonDistanceOptimalCost+self.theList[i][8]
-        worksheet.write(0,3,str(totalNonDistanceOptimalCost)[:8])
+        worksheet.write(0,3,str(totalNonDistanceOptimalCost)[:11])
         
         # Calculates the total optimal distance and displays it
         totalOptimalDistance=0
         for i in range(len(self.theList)):
             totalOptimalDistance=totalOptimalDistance+self.theList[i][4]
-        worksheet.write(0,5,str(totalOptimalDistance)[:8])
+        worksheet.write(0,5,str(totalOptimalDistance)[:11])
         
         # Calculates the total truck weight and displays it
         totalTruckWeight=0
         for i in range(len(self.theList)):
             totalTruckWeight=totalTruckWeight+self.theList[i][5]
-        worksheet.write(0,7,str(totalTruckWeight)[:8])
+        worksheet.write(0,7,str(totalTruckWeight)[:11])
 
         # Allows the user to select a name and a directory for the saved excel spreadsheet
         fileName=QFileDialog.getSaveFileName(self,'Save Spreadsheet','/home','*.xls')
