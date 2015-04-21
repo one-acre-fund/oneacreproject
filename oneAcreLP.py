@@ -2,66 +2,130 @@
 from pulp import *
 import xlrd
 import math
-
-#w = "Warehouse1"
-#c= "CostMatrix.xlsx"
-#districtList = [("district1", "DistanceMatrix.xlsx", "DemandMatrix.xlsx"), ("district2", "DistanceMatrix.xlsx", "DemandMatrix.xlsx")]
+import operator
 
 def solve(window,w,c,districtList):
     """
         - w: warehouse name
         - c: cost matrix
         - districtList: includes (district name, distance matrix, demand matrix)
-    """
+        """
     results = []
     for (district_name, distance_matrix, demand_matrix) in districtList:
         DISTRICT = district_name
         (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
-        (LOCATIONS, DISTMAT) = readDistMatrix(distance_matrix)
-        DEMANDMAT = readDemandMatrix(demand_matrix)
+        (LOCATIONS, DISTMAT, nrow_distM) = readDistMatrix(distance_matrix)
+        (DEMANDMAT,nrow_demandM, ncol_demandM) = readDemandMatrix(demand_matrix)
+        
+        """
+        check if all the possible error caused by user
+            1. In the distance matrix, the number of rows and cols must be equal.
+            2. The length of rows in distance matrix and demand matrix must be equal.
+        """
+        if (nrow_demandM != (nrow_distM-1)):
+            return "In distance matrix and demand matrix, please make sure that the number of sites must be matched!"
+    
+        # run LP solver
         result = runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT)
         results = results + result
     window.outputTab.showtable(results,w)
-    #display(w, results)
-    #return results
+#display(w, results)
+#return results
 ## success return None
 ## fail return error message
+
+def sort_table(table, col=0):
+    return sorted(table, key=operator.itemgetter(col))
 
 def readDistMatrix(distanceFile):
     """
         - open and read an Excel file for distance matrix
         - @param distanceFile: Distance matrix file location
         - @return new_distMatrix: Distance matrix without the all title of row and col
-    """
+        """
     book = xlrd.open_workbook(distanceFile)
     dist_sheet = book.sheet_by_index(0)
     #dist_sheet = book.sheet_by_name('Distance_Matrix')
     nrow_distM = dist_sheet.nrows
     ncol_distM = dist_sheet.ncols
     distMatrix = [[0 for col in range(0,ncol_distM)] for row in range(0,nrow_distM)]
+    sorted_distM = []
     new_distMatrix = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
     LOCATIONS = [0 for i in range(0,ncol_distM-2)]
+    
+    # In the distance matrix, the number of rows and cols must be equal (ERROR CHECK).
+    if (nrow_distM != ncol_distM):
+        return "In distance matrix, please make sure the number of rows and columns are equal!"
+    
     # Store the original data
     for row in range(0,nrow_distM):
         dist_sheet.row_values(row)
         for col in range(0,ncol_distM):
             distMatrix[row][col] = dist_sheet.cell(row,col).value
+    #print(distMatrix)
+    
+    ####
+    for row in sort_table(distMatrix, 0):
+        sorted_distM.append(row)
+    #print(sorted_distM)
+
+    d = {}
+
+    #for col in range(0,len(sorted_distM)):
+    #    key_i = sorted_distM[0][col]
+    #    d[key_i] = col
+
+    for row in range(0,len(sorted_distM)):
+        key_i = sorted_distM[row][0]
+        d[key_i] = row
+    #print(d)
+    d2 = OrderedDict(sorted(d.items()))
+    #print(d2)
+
+    unsorted_order = []
+    for col in range(0,len(sorted_distM)):
+        key_i = sorted_distM[0][col]
+        d2.get(key_i)
+        unsorted_order.append(d2.get(key_i))
+    #print(unsorted_order)
+    
+    #print(len(unsorted_order))
+    new_sorted_distM = []
+    for row in range(0,len(sorted_distM)):
+        sorted_row = []
+        for col in range(0,len(sorted_distM)):
+            idx = unsorted_order.index(col)
+            sorted_row.append(sorted_distM[row][idx])
+        new_sorted_distM.append(sorted_row)
+    #print (new_sorted_distM)
+
+    ###!!!!!!!! work on this error check code !!!!!!!
+    #check if the names of the row and col are same
+    print(new_sorted_distM[0][26])
+    print(new_sorted_distM[26][0])
+    for i in range(1,nrow_distM):
+        if new_sorted_distM[0][i] != new_sorted_distM[i][0]:
+            return ("Please make sure that all the names in rows and columns are matched")
+
     # Store the list of locations in array "LOCATIONS"
     for i in range(1,ncol_distM-1):
-        LOCATIONS[i-1] = str(distMatrix[0][i])
+        LOCATIONS[i-1] = str(sorted_distM[0][i])
     #print(LOCATIONS)
+
+    ###
     # Create the distance matrix without the title
     for row in range(1,nrow_distM):
         for col in range(1,ncol_distM):
-            new_distMatrix[row-1][col-1] = float(distMatrix[row][col])
-    #print distMatrix
+            new_distMatrix[row-1][col-1] = float(sorted_distM[row][col])
+    #print (sorted_distM)
     #print (new_distMatrix)
-    return(LOCATIONS, new_distMatrix)
+
+    return(LOCATIONS, new_distMatrix, nrow_distM)
 
 def readCostMatrix(costFile):
     """
         - open and read a Cost Matrix from given path
-    """
+        """
     book = xlrd.open_workbook(costFile)
     cost_sheet = book.sheet_by_index(0)
     #cost_sheet = book.sheet_by_name('Cost_Matrix')
@@ -101,7 +165,7 @@ def readCostMatrix(costFile):
 def readDemandMatrix(demandFile):
     """
         - open and read a Demand Matrix from given path
-    """
+        """
     book = xlrd.open_workbook(demandFile)
     demand_sheet = book.sheet_by_index(0)
     #demand_sheet = book.sheet_by_name('Demand_Matrix')
@@ -117,7 +181,7 @@ def readDemandMatrix(demandFile):
     for row in range(1,nrow_demandM):
         new_demandMatrix[row-1] = demandMatrix[row][1]
     #print (new_demandMatrix)
-    return(new_demandMatrix)
+    return(new_demandMatrix, nrow_demandM, ncol_demandM)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
     
@@ -204,7 +268,7 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     # Create the prob variable
     prob=LpProblem("TheOneAcre",LpMinimize)
-
+        
     c = [[[[0 for n in upperDist]for m in truckSize] for j in location]for i in location]
     for i in range(0,len(location)):
         for j in range(0,len(location)):
@@ -227,15 +291,15 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     # Add objective function always
     prob+= lpSum(c[i][j][m][n]*x[i][j][m][n] for i in range(0,len(location)) for j in range(i,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))), "Objective Function"
-
+        
     # Next we add constraints
-
+    
     # A farm must be visited at one and only one truck
     for i in range(0,len(location)):
         prob+= lpSum(x[i][j][m][n] for j in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation Row" +str(i)
     for j in range(0,len(location)):
         prob+= lpSum(x[i][j][m][n] for i in range(0,len(location)) for m in range(0,len(truckSize)) for n in range(0,len(upperDist))) ==1, "Route Allocation Col" +str(j)
-
+    
     # X must be symmetrical
     for i in range(0,len(location)):
         for j in range(0,len(location)):
@@ -261,9 +325,9 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
     prob.solve()
     
     # Extract decision variables that are 1
-
+    
     list = []
-
+    
     for i in range(0,len(location)):
         for j in range(i,len(location)):
             for m in range(0,len(truckSize)):
@@ -278,9 +342,9 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
 
     numRow = len(list)
     numCol = 9
-	
-	# Create the output array 
-	
+    
+    # Create the output array
+    
     if (LpStatus[prob.status]=="Optimal"):
         output=[[0 for col in range(0,numCol)]for row in range(0,numRow)]
         for row in range(0,numRow):
@@ -291,26 +355,21 @@ def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, CO
             else:
                 output[row][1]= location[list[row][0]]
                 output[row][2]= location[list[row][1]]
-
+        
             output[row][3]= routeDist[list[row][0]][list[row][1]]
             output[row][4]= distBrackets[list[row][0]][list[row][1]][list[row][3]]
             output[row][5]= demandMat[list[row][0]][list[row][1]]
             output[row][6]= truckSize[list[row][2]]
             output[row][7]= math.floor(c[list[row][0]][list[row][1]][list[row][2]][list[row][3]])
-
+            
             if (output[row][3]<output[row][4]):
                 output[row][8]= c[list[row][0]][list[row][1]][list[row][2]][list[row][3]-1]
             else:
                 output[row][8] = output[row][7]
     else:
-    	output=[[0 for col in range(0,numcol)]]
-    	output[0][0] = District
-    	output[0][1] = "Infeasible"
-
+        output=[[0 for col in range(0,numCol)]]
+        output[0][0] = DISTRICT
+        output[0][1] = "Infeasible"
+    
     return output
-
-#myoutput = solve(w,c,districtList)
-#print(myoutput)
-
-
 
