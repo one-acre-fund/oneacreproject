@@ -80,6 +80,7 @@ class OutputTab(guidefault.DefaultTab):
         vBox.addLayout(hBoxFive)
 
         self.table=QTableWidget(1000,9,self)
+        self.table.setFixedSize(800,350)
         self.table.setHorizontalHeaderLabels(['district','site 1', 'site 2', 'actual distance','optimal distance','weight','truck size','optimal cost', 'Non-Distance optimal cost'])
         self.table.setColumnWidth(0,150)
         self.table.setColumnWidth(1,150)
