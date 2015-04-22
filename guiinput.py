@@ -19,6 +19,7 @@ class InputTab(guidefault.DefaultTab):
     distanceFile = guidata.FILENONE
     weightFile = guidata.FILENONE
     costFile = guidata.FILENONE
+    lastFile = "../"
 
     # Instance variable widgets needed when "save" is clicked
     warehouseCombo = None
@@ -529,8 +530,9 @@ class InputTab(guidefault.DefaultTab):
         @param fileType Use constants DISTANCEFILE, etc...
         """
         fileName = QFileDialog.getOpenFileName(self, "Open " + fileType,
-                                               "../", "*.xls *.xlsx")
+                                               self.lastFile, "*.xls *.xlsx")
         if fileName[0] != "":
+            self.lastFile = fileName[0]
             if fileType == self.DISTANCEFILE:
                 self.distanceFile = fileName[0]
                 self.distanceLabel.setText(fileName[0])
