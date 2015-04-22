@@ -4,6 +4,33 @@ import xlrd
 import math
 import operator
 
+def sortDistanceMatrix(dm):
+    firstRow = dm.pop(0)
+    firstRow.pop(0)
+    firstRow.pop()
+    lastRow = dm.pop()
+    dm.sort(key=lambda x: x[0])
+    
+    dm.append(lastRow)
+    for row in dm:
+        row.pop(0)
+    lastCol = []
+    for row in dm:
+        lastCol.append(row.pop())
+    for i in range(len(firstRow)):
+        firstRow[i] = (firstRow[i], i)
+    firstRow.sort(key=lambda x: x[0])
+    for i in range(len(dm)):
+        row = dm[i]
+        rowLength = len(row)
+        rowCopy = []
+        for j in range(rowLength):
+            rowCopy.append(row[j])
+        for j in range(rowLength):
+            row[j] = rowCopy[firstRow[j][1]]
+    for i, row in enumerate(dm):
+        row.append(lastCol[i])
+
 def solve(window,w,c,districtList):
     """
         - w: warehouse name
