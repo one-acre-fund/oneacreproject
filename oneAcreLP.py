@@ -15,12 +15,13 @@ def solve(window,w,c,districtList):
         DISTRICT = district_name
         (TRUCK_SIZES, FIXED_COSTS, DISTANCE_RANGES, COSTMAT) = readCostMatrix(c)
         (LOCATIONS, DISTMAT, nrow_distM) = readDistMatrix(distance_matrix)
-        (DEMANDMAT,nrow_demandM, ncol_demandM) = readDemandMatrix(demand_matrix)
+        (DEMANDMAT,nrow_demandM) = readDemandMatrix(demand_matrix)
         
         """
         check if all the possible error caused by user
             1. In the distance matrix, the number of rows and cols must be equal.
             2. The length of rows in distance matrix and demand matrix must be equal.
+            3. check if the names of the row and col are same
         """
         if (nrow_demandM != (nrow_distM-1)):
             return "In distance matrix and demand matrix, please make sure that the number of sites must be matched!"
@@ -53,9 +54,8 @@ def readDistMatrix(distanceFile):
     new_distMatrix = [[0 for col in range(0,ncol_distM-1)] for row in range(0,nrow_distM-1)]
     LOCATIONS = [0 for i in range(0,ncol_distM-2)]
     
-    # In the distance matrix, the number of rows and cols must be equal (ERROR CHECK).
     if (nrow_distM != ncol_distM):
-        return "In distance matrix, please make sure the number of rows and columns are equal!"
+        return ("In distance matrix, please make sure the number of rows and columns are equal!")
     
     # Store the original data
     for row in range(0,nrow_distM):
@@ -63,7 +63,12 @@ def readDistMatrix(distanceFile):
         for col in range(0,ncol_distM):
             distMatrix[row][col] = dist_sheet.cell(row,col).value
     #print(distMatrix)
-    
+
+    # In the distance matrix, the number of rows and cols must be equal (ERROR CHECK).
+    for i in range(1,nrow_distM):
+        if (distMatrix[0][i] != distMatrix[i][0]):
+            return ("In distance matrix, please make sure that all the names in rows and columns are matched")
+
     ####
     for row in sort_table(distMatrix, 0):
         sorted_distM.append(row)
@@ -98,14 +103,6 @@ def readDistMatrix(distanceFile):
             sorted_row.append(sorted_distM[row][idx])
         new_sorted_distM.append(sorted_row)
     #print (new_sorted_distM)
-
-    ###!!!!!!!! work on this error check code !!!!!!!
-    #check if the names of the row and col are same
-    print(new_sorted_distM[0][26])
-    print(new_sorted_distM[26][0])
-    for i in range(1,nrow_distM):
-        if new_sorted_distM[0][i] != new_sorted_distM[i][0]:
-            return ("Please make sure that all the names in rows and columns are matched")
 
     # Store the list of locations in array "LOCATIONS"
     for i in range(1,ncol_distM-1):
@@ -181,7 +178,7 @@ def readDemandMatrix(demandFile):
     for row in range(1,nrow_demandM):
         new_demandMatrix[row-1] = demandMatrix[row][1]
     #print (new_demandMatrix)
-    return(new_demandMatrix, nrow_demandM, ncol_demandM)
+    return(new_demandMatrix, nrow_demandM)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
     
