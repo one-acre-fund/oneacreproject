@@ -529,7 +529,7 @@ class InputTab(guidefault.DefaultTab):
         @param fileType Use constants DISTANCEFILE, etc...
         """
         fileName = QFileDialog.getOpenFileName(self, "Open " + fileType,
-                                               "", "*.xls *.xlsx")
+                                               "../", "*.xls *.xlsx")
         if fileName[0] != "":
             if fileType == self.DISTANCEFILE:
                 self.distanceFile = fileName[0]

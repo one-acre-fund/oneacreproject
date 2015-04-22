@@ -1,5 +1,6 @@
 import guidefault
 import sys
+import os
 import xlwt
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication, QTableWidget,QPushButton,QHBoxLayout,QVBoxLayout
@@ -234,8 +235,12 @@ class OutputTab(guidefault.DefaultTab):
         worksheet.write(0,7,str(totalTruckWeight)[:11])
 
         # Allows the user to select a name and a directory for the saved excel spreadsheet
-        fileName=QFileDialog.getSaveFileName(self,'Save Spreadsheet','/home','*.xls')
-        workbook.save(fileName[0])
+        fileName=QFileDialog.getSaveFileName(self,'Save Spreadsheet','../','*.xls *.xlsx')
+        aFileName = fileName[0]
+        sFileName=os.path.splitext(aFileName)
+        if sFileName[1] == "":
+            aFileName = sFileName[0] + ".xls"
+        workbook.save(aFileName)
 
 
 
