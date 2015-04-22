@@ -97,6 +97,11 @@ def deleteWarehouse(warehouseName):
     if warehouseName not in jsonData:
         return (False, "Warehouse %s already deleted." 
                 % warehouseName)
+    districtList = []
+    for districtName, _ in jsonData[warehouseName][districts].items():
+        districtList.append(districtName)
+    for districtName in districtList:
+        deleteDistrict(warehouseName, districtName)
     removeFile(jsonData[warehouseName][costSuffix])
     jsonData.pop(warehouseName)
     error = saveJsonData()

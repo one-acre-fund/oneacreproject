@@ -555,6 +555,8 @@ class InputTab(guidefault.DefaultTab):
             theFile = self.costFile
         else:
             return
+        if theFile == guidata.FILENONE:
+            return
         if sys.platform == "win32":
             os.startfile(theFile)
         else:
