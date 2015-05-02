@@ -163,12 +163,12 @@ def readDemandMatrix(demandFile):
             demandMatrix[row][col] = demand_sheet.cell(row,col).value
     del demandMatrix[0]
     demandMatrix.sort()
-    print (demandMatrix)
+    #print (demandMatrix)
     new_demandMatrix = [0 for row in range(0,nrow_demandM-1)]
     for row in range(0,nrow_demandM-1):
         new_demandMatrix[row] = demandMatrix[row][1]
 
-    print (new_demandMatrix)
+    #print (new_demandMatrix)
     return(new_demandMatrix, nrow_demandM)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
