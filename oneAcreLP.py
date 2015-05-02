@@ -2,7 +2,6 @@
 from pulp import *
 import xlrd
 import math
-import operator
 
 def sortDistanceMatrix(dm):
     firstRow = dm.pop(0)
@@ -162,11 +161,14 @@ def readDemandMatrix(demandFile):
         demand_sheet.row_values(row)
         for col in range(0,ncol_demandM):
             demandMatrix[row][col] = demand_sheet.cell(row,col).value
-    #print demandMatrix
+    del demandMatrix[0]
+    demandMatrix.sort()
+    print (demandMatrix)
     new_demandMatrix = [0 for row in range(0,nrow_demandM-1)]
-    for row in range(1,nrow_demandM):
-        new_demandMatrix[row-1] = demandMatrix[row][1]
-    #print (new_demandMatrix)
+    for row in range(0,nrow_demandM-1):
+        new_demandMatrix[row] = demandMatrix[row][1]
+
+    print (new_demandMatrix)
     return(new_demandMatrix, nrow_demandM)
 
 def runLPSolver(LOCATIONS,TRUCK_SIZES, DISTANCE_RANGES, DISTMAT, FIXED_COSTS, COSTMAT,DEMANDMAT,DISTRICT):
