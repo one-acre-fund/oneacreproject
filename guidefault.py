@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QFrame
+from PyQt4.QtGui import QWidget, QFrame
 
 # Default Tab - all other tabs should inherit this
 class DefaultTab(QWidget):

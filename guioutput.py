@@ -2,11 +2,8 @@ import guidefault
 import sys
 import os
 import xlwt
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QTableWidget,QPushButton,QHBoxLayout,QVBoxLayout
-from PyQt5.QtWidgets import QLabel, QLineEdit, QTableWidgetItem,QFileDialog
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
 # Output Tab
 class OutputTab(guidefault.DefaultTab):
@@ -236,7 +233,7 @@ class OutputTab(guidefault.DefaultTab):
 
         # Allows the user to select a name and a directory for the saved excel spreadsheet
         fileName=QFileDialog.getSaveFileName(self,'Save Spreadsheet','../','*.xls *.xlsx')
-        aFileName = fileName[0]
+        aFileName = fileName
         sFileName=os.path.splitext(aFileName)
         if sFileName[1] == "":
             aFileName = sFileName[0] + ".xls"

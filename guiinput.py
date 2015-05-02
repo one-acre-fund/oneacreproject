@@ -1,9 +1,9 @@
 import guidefault, guidata
 import oneAcreLP
 import os, sys, subprocess
-from PyQt5.QtCore import Qt, QSize, QMargins
-from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
-                             QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
+from PyQt4.QtCore import Qt, QSize, QMargins
+from PyQt4.QtGui import (QHBoxLayout, QVBoxLayout, QLabel, QLineEdit, QInputDialog, 
+                         QPushButton, QFileDialog, QComboBox, QSizePolicy, QMessageBox)
 
 # Input Tab
 class InputTab(guidefault.DefaultTab):
@@ -114,8 +114,8 @@ class InputTab(guidefault.DefaultTab):
 
         self.setLayout(mainBox)
         
-        self.warehouseCombo.currentTextChanged.connect(self.warehouseChanged)
-        self.districtCombo.currentTextChanged.connect(self.districtChanged)
+        self.warehouseCombo.currentIndexChanged.connect(self.warehouseChanged)
+        self.districtCombo.currentIndexChanged.connect(self.districtChanged)
         warehouseButton.clicked.connect(self.warehouseButtonClicked)
         warehouseDButton.clicked.connect(self.warehouseDButtonClicked)
         districtButton.clicked.connect(self.districtButtonClicked)
@@ -258,7 +258,9 @@ class InputTab(guidefault.DefaultTab):
         for district in districts:
             self.districtCombo.addItem(district)
         if districtName:
-            self.districtCombo.setCurrentText(districtName)
+            districtIndex = self.districtCombo.findText(districtName)
+            if districtName != -1:
+                self.districtCombo.setCurrentIndex(districtIndex)
         self.loadDistrictData()
 
     def loadWarehouseData(self, districtName):
@@ -304,7 +306,9 @@ class InputTab(guidefault.DefaultTab):
         for warehouse in warehouses:
             self.warehouseCombo.addItem(warehouse)
         if warehouseName:
-            self.warehouseCombo.setCurrentText(warehouseName)
+            warehouseIndex = self.warehouseCombo.findText(warehouseName)
+            if warehouseIndex != -1:
+                self.warehouseCombo.setCurrentIndex(warehouseIndex)
         self.loadWarehouseData(districtName)
     
     def enableWarehouseWidgets(self, enable):
@@ -531,17 +535,17 @@ class InputTab(guidefault.DefaultTab):
         """
         fileName = QFileDialog.getOpenFileName(self, "Open " + fileType,
                                                self.lastFile, "*.xls *.xlsx")
-        if fileName[0] != "":
-            self.lastFile = fileName[0]
+        if fileName != "":
+            self.lastFile = fileName
             if fileType == self.DISTANCEFILE:
-                self.distanceFile = fileName[0]
-                self.distanceLabel.setText(fileName[0])
+                self.distanceFile = fileName
+                self.distanceLabel.setText(fileName)
             elif fileType == self.WEIGHTFILE:
-                self.weightFile = fileName[0]
-                self.weightLabel.setText(fileName[0])
+                self.weightFile = fileName
+                self.weightLabel.setText(fileName)
             elif fileType == self.COSTFILE:
-                self.costFile = fileName[0]
-                self.costLabel.setText(fileName[0])
+                self.costFile = fileName
+                self.costLabel.setText(fileName)
 
     def editUploadedFile(self, fileType):
         """

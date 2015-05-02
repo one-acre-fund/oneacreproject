@@ -3,8 +3,7 @@ import os
 import guiinput
 import guioutput
 import guidata
-from PyQt5.QtWidgets import QApplication, QWidget, QTabWidget
-from PyQt5.QtGui import QFont
+from PyQt4.QtGui import QFont, QApplication, QWidget, QTabWidget
 
 # The Main Window
 class MainWindow(QTabWidget):
