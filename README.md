@@ -1,7 +1,20 @@
 # oneacreproject
 
+
+Description
+------------------------
+This project is a Dynamic Schedule Optimizer program for One Acre Fund. It includes a GUI interface that requires PyQt4
+
 Requirements
-1. Python 2.7
+------------------------
+1. Python 3.4
+2. PyQt4 4.11.3
+3. 
+
+Organization
+------------------------
+
+
 2. wxPython - http://www.wxpython.org/
 
 Mac Instructions for installing PyQt5:
