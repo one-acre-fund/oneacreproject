@@ -3,17 +3,49 @@
 
 Description
 ------------------------
-This project is a Dynamic Schedule Optimizer program for One Acre Fund. It includes a GUI interface that requires PyQt4
+This project is a Dynamic Schedule Optimizer program for One Acre Fund. It includes a GUI interface that requires PyQt4, linked to a backend linear program solver. Tested on WINDOWS and MACINTOSH systems.
 
 Requirements
 ------------------------
 1. Python 3.4
 2. PyQt4 4.11.3
+3. PuLP 1.5.6
+4. xlrd 0.9.3
+5. xlwt 1.0.0
+
+Installation
+------------------------
+For PyQt4 on Windows:
+1. Install Python 3.4 as usual
+2. There's a very nice PyQt4 installer on the PyQt website, please use it :)
+
+For PyQt4 on Mac:
+1. Go to Mac App store and install XCode
+2. Install XCode Command Line tools 
+```
+xcode-select --install
+```
 3. 
+
+For the rest of the packages:
+1. Download the Package
+2. Unzip and type "python setup.py install"
+
+Running
+------------------------
+python guimain.py
 
 Organization
 ------------------------
+1. guimain.py - sets up the PyQt application
+2. guidata.py - loading/saving data (in JSON format)
+3. guiinput.py - Input tab
+4. guioutput.py - Output tab
+5. oneAcreLP.py - PuLP linear program code
+6. Some other files included
 
+Deployment
+------------------------
 
 2. wxPython - http://www.wxpython.org/
 
