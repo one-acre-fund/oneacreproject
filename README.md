@@ -1,9 +1,12 @@
 # oneacreproject
 
-
 Description
 ------------------------
 This project is a Dynamic Schedule Optimizer program for One Acre Fund. It includes a GUI interface that requires PyQt4, linked to a backend linear program solver. Tested on WINDOWS and MACINTOSH systems.
+
+NOTES ON USAGE: Pressing "Edit" (After you've saved a spreadsheet) will open up that spreadsheet in your local Excel Editor. Make sure you save the spreadsheet in the editor for any changes you make to be permanent.
+
+FEATURES NOT COMPLETELY ADDED YET: "Destinations/Truck" and "Max Trucks/Warehouse/Day" are currently editable on the front end, but are not supported by the linear program solver.
 
 Requirements
 ------------------------
@@ -25,11 +28,24 @@ For PyQt4 on Mac:
 ```
 xcode-select --install
 ```
--  
+- Download the pkg installer for MacPorts for your version of OS X
+- Follow the installer to install MacPorts
+- Use MacPorts to install Python 3.4, PyQt4, and py2app (needed for deployment)
+```
+sudo port install python34
+port select python python34
+sudo port install py34-macholib 
+sudo port install py34-sip
+sudo port install py34-pyqt4
+sudo port install py34-py2app
+```
 
 For the rest of the packages:
-1. Download the Package
-2. Unzip and type "python setup.py install"
+- Download the Package
+- Unzip and install 
+```
+python setup.py install
+```
 
 Running
 ------------------------
@@ -46,42 +62,6 @@ Organization
 
 Deployment
 ------------------------
-
-2. wxPython - http://www.wxpython.org/
-
-Mac Instructions for installing PyQt5:
-
-Following instructions mostly from:
-http://www.pythonschool.net/pyqt/distributing-your-application-on-mac-os-x/
-
-Install XCode (From Mac App store)
-Install XCode Command Line Tools
-==> xcode-select --install
-Download the pkg installer for MacPorts for your version of OS X
-Follow the installer to install MacPorts
-Use MacPorts to install PyQT5
-==> sudo port selfupdate
-==> sudo port install py34-pyqt5
-
-1. List the available pythons to select from:
-==> sudo port select --list python
-
-run version python3.4 through terminal
-==> sudo port select python python34
-
-The error message pops up while installing pulp 1.5.8
-
-ImportError: No module named 'pkg_resources'
-
-1) Download ez_setup.py module from
-
-https://pypi.python.org/pypi/setuptools
-
-2) Open a Terminal
-
-3) cd to the directory where you put the 'ez_setup.py'
-
-4) type 'python ez_setup.py' and run it.
-
-5) You should have it then.
-
+We've only deployed on MACINTOSH so far, and it requires py2app. Please follow the instructions in "Installation" above to install it. Follow instructions on this page:
+- https://pythonhosted.org/py2app/tutorial.html
+- Make sure that the includes contain "sip" and other modules listed above
