@@ -16,16 +16,16 @@ Requirements
 Installation
 ------------------------
 For PyQt4 on Windows:
-1. Install Python 3.4 as usual
-2. There's a very nice PyQt4 installer on the PyQt website, please use it :)
+- Install Python 3.4 as usual
+- There's a very nice PyQt4 installer on the PyQt website, please use it :)
 
 For PyQt4 on Mac:
-1. Go to Mac App store and install XCode
-2. Install XCode Command Line tools 
+- Go to Mac App store and install XCode
+- Install XCode Command Line tools 
 ```
 xcode-select --install
 ```
-3. 
+-  
 
 For the rest of the packages:
 1. Download the Package
